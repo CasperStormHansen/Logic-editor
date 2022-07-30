@@ -1,0 +1,962 @@
+const string = (formula, id = '') => {
+    if (id) {
+        switch (formula.type) {
+            case 'empty':
+                return `<span class=empty id=${id} onclick=makeActive(this,"justThis")>${formula.letter}</span>`;
+            case 'atomic':
+                return `<span id=${id} onclick=makeActive(this,"justThis")>${formula.letter}</span>`;
+            case 'negation':
+                return `<span id=${id}><span onclick=makeActive(this,"parentNode")>${symbols.negation}</span>&thinsp;${stringPar(formula.right, id + '.right')}</span>`;
+            default:
+                return `<span id=${id}>${stringPar(formula.left, id + '.left')}<span onclick=makeActive(this,"parentNode")>&emsp13;${symbols[formula.type]}&emsp13;</span>${stringPar(formula.right, id + '.right')}</span>`;
+        }
+    } else {
+        switch (formula.type) {
+            case 'atomic':
+                return formula.letter;
+            case 'negation':
+                return `${symbols.negation}&thinsp;${stringPar(formula.right)}`;
+            default:
+                return `${stringPar(formula.left)}&emsp13;${symbols[formula.type]}&emsp13;${stringPar(formula.right)}`;
+        }
+    }
+}
+
+const stringSelectableConjuncts = (formula, line) => {
+    return `<span class="selectable" onclick="lineSelection(${line}, 'left')">${stringPar(formula.left)}</span>
+        &emsp13;${symbols['conjunction']}&emsp13;
+        <span class="selectable" onclick="lineSelection(${line}, 'right')">${stringPar(formula.right)}</span>`;
+}
+
+const stringPar = (formula, id = '') => {
+    if (['conjunction', 'disjunction', 'conditional', 'biconditional'].includes(formula.type)) {
+        return '(' + string(formula, id) + ')';
+    } else {
+        return string(formula, id);
+    }
+}
+
+const renderProof = () => {
+    let rows = '';
+    for (let i = 1; i < proof.length; i++) {
+        if (testEligibilityOfLine(i)) {
+            rows += `<div class="tableRow selectable" onclick="lineSelection(${i})">`;
+        } else {
+            rows += '<div class="tableRow">';
+        }
+        rows += `<div class="tableCell">${String(proof[i]['dependencies'])}</div>
+            <div class="tableCell">(${i})</div>`;
+        if (testEligibilityOfLine(i, 'conjuncts')) {
+            rows += `<div class="tableCell">${stringSelectableConjuncts(proof[i]['formula'], i)}</div>`;
+        } else if (proof[i]['beingEdited']) {
+            rows += `<div class="tableCell">${string(proof[i]['formula'], i + '.formula')}</div>`;
+        } else {
+            rows += `<div class="tableCell">${string(proof[i]['formula'])}</div>`;
+        }
+        rows += `<div class="tableCell">${proof[i]['inferenceSources']} ${proof[i]['inference']}</div>
+            </div>`;
+    }
+    $("#proof").html(rows);
+}
+
+const addPremiseOrAssumption = (premiseOrAssumption) => {
+    cancel();
+    proof.push(
+        {
+            formula: { type: 'empty', letter: '_' },
+            dependencies: [proof.length],
+            inference: premiseOrAssumption,
+            inferenceSources: [],
+            beingEdited: true
+        }
+    )
+    renderProof();
+    makeActive(document.getElementById(`${proof.length - 1}.formula`), 'justThis');
+    buttonsActive({
+        premiseOrAssumption: false,
+        symbolInput: true,
+        inference: false,
+        cancel: true,
+        reset: true
+    })
+}
+
+const makeActive = (clickedOrInsertedElement, thisOrParentOrChild) => {
+    if (activeElement) {
+        activeElement.classList.remove('active');
+    }
+    switch (thisOrParentOrChild) {
+        case "justThis":
+            activeElement = clickedOrInsertedElement;
+            break;
+        default:
+            activeElement = clickedOrInsertedElement[thisOrParentOrChild];
+            break;
+    }
+    activeElement.classList.add('active');
+    activeFormula = activeElement.id;
+}
+
+const insert = (type, symbol = '') => {
+    if (activeFormula) {
+        let array = activeFormula.split(".");
+        let obj = (ruleSelections[0] === null) ? proof : enteredDisjunct;
+        while (array.length > 1) {
+            obj = obj[array.shift()];
+        }
+        switch (type) {
+            case 'atomic':
+                obj[array.shift()] = { type: 'atomic', letter: symbol };
+                if (ruleSelections[0] === null) {
+                    renderProof();
+                } else {
+                    ruleVariableUpdate(null, 'callFromInsertUnfinished');
+                    renderRule();
+                }
+                listOfEmpty = document.querySelectorAll(`.empty, [id="${activeFormula}"]`)
+                if (listOfEmpty.length === 1) {
+                    if (ruleSelections[0] === null) {
+                        proof[activeFormula.split(".")[0]]['beingEdited'] = false;
+                        activeElement = undefined;
+                        activeFormula = undefined;
+                        buttonsActive({
+                            premiseOrAssumption: true,
+                            symbolInput: false,
+                            inference: true,
+                            cancel: false
+                        });
+                    } else {
+                        activeElement = undefined;
+                        activeFormula = undefined;
+                        ruleVariableUpdate(null, 'callFromInsertFinished');
+                    }
+                } else {
+                    for (let i = 0; i < listOfEmpty.length; i++) {
+                        if (listOfEmpty.item(i).id === activeFormula) {
+                            if (i + 1 < listOfEmpty.length) {
+                                makeActive(listOfEmpty.item(i + 1), 'justThis');
+                            } else {
+                                makeActive(listOfEmpty.item(0), 'justThis');
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+            case 'negation':
+                obj[array.shift()] = { type: 'negation', right: { type: 'empty', letter: '_' } };
+                if (ruleSelections[0] === null) {
+                    renderProof();
+                } else {
+                    ruleVariableUpdate(null, 'callFromInsertUnfinished');
+                    renderRule();
+                }
+                makeActive(document.getElementById(activeFormula), 'lastChild');
+                break;
+            default:
+                obj[array.shift()] = { type: type, left: { type: 'empty', letter: '_' }, right: { type: 'empty', letter: '_' } };
+                if (ruleSelections[0] === null) {
+                    renderProof();
+                } else {
+                    ruleVariableUpdate(null, 'callFromInsertUnfinished');
+                    renderRule();
+                }
+                makeActive(document.getElementById(activeFormula), 'firstChild');
+                break;
+        }
+    }
+}
+
+const createButton = (onclick, label, buttonClass) => {
+    const button = document.createElement('button');
+    button.setAttribute('onclick', onclick);
+    button.setAttribute('class', buttonClass);
+    button.setAttribute('ID', label);
+    button.innerHTML = label;
+    document.getElementById('buttons').appendChild(button);
+}
+
+const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
+    for (const [key, value] of Object.entries(classesWithBoolean)) {
+        $(`.${key}`).attr('disabled', !value);
+    }
+    for (const [key, value] of Object.entries(IDsWithBoolean)) {
+        $(`#${key}`).attr('disabled', !value);
+    }
+}
+
+const ruleSelection = (rule) => {
+    ruleSelections = [rule, null, null, null, null, null];
+    renderAll();
+    buttonsActive({
+        cancel: true,
+        inference: true
+    }, {
+        [rule]: false
+    });
+}
+
+const testEligibilityOfLine = (proofLine, conjuncts = '') => {
+    if (conjuncts === 'conjuncts') {
+        if (ruleSelections[0] === `${symbols.conjunction}E`) {
+            if (ruleSelections[1] === null) {
+                return proof[proofLine]['formula']['type'] === 'conjunction';
+            }
+        }
+    } else {
+        switch (ruleSelections[0]) {
+            case null: {
+                return false;
+            }
+            case `${symbols.negation}E`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'negation';
+                } else if (ruleSelections[2] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(proof[ruleSelections[1]]['formula']['right']);
+                }
+            }
+            case `${symbols.negation}I`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['inference'] === 'Assumption';
+                } else if (ruleSelections[2] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(theContradiction);
+                }
+            }
+            case `${symbols.conjunction}E`: {
+                return false;
+            }
+            case `${symbols.conjunction}I`: {
+                if (ruleSelections[2] === null) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            case `${symbols.disjunction}I`: {
+                if (ruleSelections[1] === null) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            case `${symbols.disjunction}E`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'disjunction';
+                } else if (ruleSelections[2] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(proof[ruleSelections[1]]['formula']['left']);
+                } else if (ruleSelections[3] === null) {
+                    return true;
+                } else if (ruleSelections[4] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(proof[ruleSelections[1]]['formula']['right']);
+                } else if (ruleSelections[5] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(proof[ruleSelections[3]]['formula']);
+                }
+            }
+            case `${symbols.conditional}E`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'conditional';
+                } else if (ruleSelections[2] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(proof[ruleSelections[1]]['formula']['left']);
+                }
+            }
+            case `${symbols.conditional}I`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['inference'] === 'Assumption';
+                } else if (ruleSelections[2] === null) {
+                    return true;
+                }
+            }
+            case `${symbols.biconditional}E`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'biconditional';
+                }
+            }
+            case `${symbols.biconditional}I`: {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'conjunction'
+                        && proof[proofLine]['formula']['left']['type'] === 'conditional'
+                        && proof[proofLine]['formula']['right']['type'] === 'conditional'
+                        && JSON.stringify(proof[proofLine]['formula']['left']['left'])
+                        === JSON.stringify(proof[proofLine]['formula']['right']['right'])
+                        && JSON.stringify(proof[proofLine]['formula']['left']['right'])
+                        === JSON.stringify(proof[proofLine]['formula']['right']['left']);
+                }
+            }
+            case 'DN': {
+                if (ruleSelections[1] === null) {
+                    return proof[proofLine]['formula']['type'] === 'negation'
+                        && proof[proofLine]['formula']['right']['type'] === 'negation';
+                }
+            }
+            case 'EFQ': {
+                if (ruleSelections[1] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(theContradiction);
+                }
+            }
+        }
+    }
+}
+
+const lineSelection = (proofLine, conjunct = null) => {
+    let ruleLine = ruleSelections.findIndex(ruleLine => ruleLine === null);
+    ruleSelections[ruleLine] = proofLine;
+    if (conjunct) {
+        ruleSelections[ruleLine + 1] = conjunct;
+    }
+    buttonsActive({
+        premiseOrAssumption: false,
+        inference: false
+    });
+    ruleVariableUpdate(proofLine, ruleLine);
+}
+
+const ruleVariableUpdate = (proofLine, ruleLine) => {
+    switch (ruleSelections[0]) {
+        case `${symbols.negation}E`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    q = proof[proofLine]['formula']['right'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    k = proofLine;
+                    b = proof[proofLine]['dependencies'];
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: theContradiction,
+                            dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.negation}I`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    p = proof[proofLine]['formula'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    k = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: negationOf(proof[ruleSelections[1]]['formula']),
+                            dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[2]]['dependencies'].includes(i) && i !== ruleSelections[1]),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.conjunction}E`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['left'];
+                    q = proof[proofLine]['formula']['right'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: proof[ruleSelections[1]]['formula'][ruleSelections[2]],
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.conjunction}I`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    k = proofLine;
+                    b = proof[proofLine]['dependencies'];
+                    q = proof[proofLine]['formula'];
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: conjunctionOf(proof[ruleSelections[1]]['formula'], proof[ruleSelections[2]]['formula']),
+                            dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.disjunction}I`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    q = enteredDisjunct['formula'];
+                    buttonsActive({
+                        symbolInput: true
+                    });
+                    renderAll();
+                    makeActive(document.getElementById('formula'), 'justThis');
+                    break;
+                }
+                case 'callFromInsertUnfinished': {
+                    q = enteredDisjunct['formula'];
+                    break;
+                }
+                case 'callFromInsertFinished': {
+                    q = enteredDisjunct['formula'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: disjunctionOf(
+                                (ruleSelections[2] === 'leftDisjunct') ?
+                                    proof[ruleSelections[1]]['formula'] :
+                                    JSON.parse(JSON.stringify(enteredDisjunct.formula)),
+                                (ruleSelections[2] === 'leftDisjunct') ?
+                                    JSON.parse(JSON.stringify(enteredDisjunct.formula)) :
+                                    proof[ruleSelections[1]]['formula']
+                            ),
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.disjunction}E`: {
+            switch (ruleLine) {
+                case 1: {
+                    g = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['left'];
+                    q = proof[proofLine]['formula']['right'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    h = proofLine;
+                    renderAll();
+                    break;
+                }
+                case 3: {
+                    i = proofLine;
+                    b = proof[proofLine]['dependencies'];
+                    r = proof[proofLine]['formula'];
+                    renderAll();
+                    break;
+                }
+                case 4: {
+                    j = proofLine;
+                    renderAll();
+                    break;
+                }
+                case 5: {
+                    c = proof[proofLine]['dependencies'];
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: proof[ruleSelections[3]]['formula'],
+                            dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || (proof[ruleSelections[3]]['dependencies'].includes(i) && i !== ruleSelections[2]) || (proof[ruleSelections[5]]['dependencies'].includes(i) && i !== ruleSelections[4])),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2], ruleSelections[3], ruleSelections[4], ruleSelections[5]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.conditional}E`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['left'];
+                    q = proof[proofLine]['formula']['right'];
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    k = proofLine;
+                    b = proof[proofLine]['dependencies'];//Order may be wrong. Bug or feature?
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: proof[ruleSelections[1]]['formula']['right'],
+                            dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.conditional}I`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    p = proof[proofLine]['formula']
+                    renderAll();
+                    break;
+                }
+                case 2: {
+                    k = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    m = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: conditionalOf(proof[ruleSelections[1]]['formula'], proof[ruleSelections[2]]['formula']),
+                            dependencies: proof[ruleSelections[2]]['dependencies'].filter(line => line !== ruleSelections[1]),
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1], ruleSelections[2]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.biconditional}E`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['left'];
+                    q = proof[proofLine]['formula']['right'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: conjunctionOf(conditionalOf(proof[ruleSelections[1]]['formula']['left'], proof[ruleSelections[1]]['formula']['right']), conditionalOf(proof[ruleSelections[1]]['formula']['right'], proof[ruleSelections[1]]['formula']['left'])),
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case `${symbols.biconditional}I`: {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['left']['left'];
+                    q = proof[proofLine]['formula']['left']['right'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: conditionalOf(proof[ruleSelections[1]]['formula']['left']['left'], proof[ruleSelections[1]]['formula']['left']['right']),
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case 'DN': {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = proof[proofLine]['formula']['right']['right'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: proof[ruleSelections[1]]['formula']['right']['right'],
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case 'EFQ': {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = enteredDisjunct['formula'];
+                    buttonsActive({
+                        symbolInput: true
+                    });
+                    renderAll();
+                    makeActive(document.getElementById('formula'), 'justThis');
+                    break;
+                }
+                case 'callFromInsertUnfinished': {
+                    p = enteredDisjunct['formula'];
+                    break;
+                }
+                case 'callFromInsertFinished': {
+                    p = enteredDisjunct['formula'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: enteredDisjunct['formula'],
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: ruleSelections[0],
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+    }
+}
+
+const renderRule = () => {
+    switch (ruleSelections[0]) {
+        case `${symbols.negation}E`: {
+            var rule = [null,
+                [a, j, string(negationOf(q))],
+                [b, k, string(q)],
+                [`${a},${b}`, m, string(theContradiction), `${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.negation}I`: {
+            var rule = [null,
+                [j, j, string(p), 'Assumption'],
+                [a, k, string(theContradiction)],
+                [`{${a}}&VeryThinSpace;/&VeryThinSpace;${j}`, m, string(negationOf(p)), `${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.conjunction}E`: {
+            var rule = [null,
+                [a, j, string(conjunctionOf(p, q))],
+                [a,
+                    k,
+                    (ruleSelections[1] === null) ?
+                        `${string(p)} (or ${string(q)})`
+                        :
+                        (ruleSelections[2] === 'left') ?
+                            string(p)
+                            :
+                            string(q),
+                    j]
+            ];
+            break;
+        }
+        case `${symbols.conjunction}I`: {
+            var rule = [null,
+                [a, j, string(p)],
+                [b, k, string(q)],
+                [`${a},${b}`, m, string(conjunctionOf(p, q)), `${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.disjunction}E`: {
+            var rule = [null,
+                [a, g, string(disjunctionOf(p, q))],
+                [h, h, string(p), 'Assumption'],
+                [b, i, string(r)],
+                [j, j, string(q), 'Assumption'],
+                [c, k, string(r)],
+                [`{${a}}&thinsp;∪&thinsp;{${b}}&VeryThinSpace;/&VeryThinSpace;${h}&thinsp;∪&thinsp;{${c}}&VeryThinSpace;/&VeryThinSpace;${j}`, m, string(r), `${g},${h},${i},${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.disjunction}I`: {
+            var rule = [null,
+                [a, j, string(p)],
+                [
+                    a,
+                    k,
+                    (ruleSelections[2] === null) ?
+                        (ruleSelections[1] === null) ?
+                            `${string(disjunctionOf(p, q))} (or ${string(conjunctionOf(q, p))})`
+                            :
+                            `<span class="selectable" onclick="lineSelection('leftDisjunct')">${string(disjunctionOf(p, q))}</span> (or <span class="selectable" onclick="lineSelection('rightDisjunct')">${string(disjunctionOf(q, p))}</span>)`
+                        :
+                        (ruleSelections[2] === 'leftDisjunct') ?
+                            `${stringPar(p)}&emsp13;${symbols.disjunction}&emsp13;${stringPar(q, 'formula')}`
+                            :
+                            `${stringPar(q, 'formula')}&emsp13;${symbols.disjunction}&emsp13;${stringPar(p)}`,
+                    j
+                ]
+            ];
+            break;
+        }
+        case `${symbols.conditional}E`: {
+            var rule = [null,
+                [a, j, string(conditionalOf(p, q))],
+                [b, k, string(p)],
+                [`${a},${b}`, m, string(q), `${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.conditional}I`: {
+            var rule = [null,
+                [j, j, string(p), 'Assumption'],
+                [a, k, string(q)],
+                [`{${a}}&VeryThinSpace;/&VeryThinSpace;${j}`, m, string(conditionalOf(p, q)), `${j},${k}`]
+            ];
+            break;
+        }
+        case `${symbols.biconditional}E`: {
+            var rule = [null,
+                [a, j, string(biconditionalOf(p, q))],
+                [a, k, string(conjunctionOf(conditionalOf(p, q), conditionalOf(q, p))), j]
+            ];
+            break;
+        }
+        case `${symbols.biconditional}I`: {
+            var rule = [null,
+                [a, j, string(conjunctionOf(conditionalOf(p, q), conditionalOf(q, p)))],
+                [a, k, string(biconditionalOf(p, q)), j]
+            ];
+            break;
+        }
+        case 'DN': {
+            var rule = [null,
+                [a, j, string(negationOf(negationOf(p)))],
+                [a, k, string(p), j]
+            ];
+            break;
+        }
+        case 'EFQ': {
+            var rule = [null,
+                [a, j, string(theContradiction)],
+                [a, k, string(p, 'formula'), j]
+            ];
+            break;
+        }
+        default: {
+            var rule = null;
+        }
+    }
+    firsthtml = "";
+    secondhtml = "";
+    if (ruleSelections[0] !== null) {
+        firsthtml += `<div class="tableRowSeperator"></div>
+            <div class="tableRowRulename">
+                <div class="tableCellRulename" colspan="2">Rule of ${ruleSelections[0]}</div>
+            </div>`
+        for (var line = 1; line < rule.length; line++) {
+            if (line < rule.length - 1) {
+                firsthtml += `<div class="tableRow${waitingForInput(line)}">
+                        <div class="tableCell">${rule[line][0]}</div>
+                        <div class="tableCell">(${rule[line][1]})</div>
+                        <div class="tableCell">${rule[line][2]}</div>`
+                if (rule[line][3]) {
+                    firsthtml += `<div class="tableCell">${rule[line][3]}</div>`
+                }
+                firsthtml += `</div>
+                    <div class="tableRowVdots">
+                        <div class="tableCellVdots"></div><div class="tableCellVdots">&#8942;</div>
+                    </div>`
+            } else {
+                secondhtml += `<div class="tableRow">
+                        <div class="tableCell">${rule[line][0]}</div>
+                        <div class="tableCell">(${rule[line][1]})</div>
+                        <div class="tableCell">${rule[line][2]}</div>
+                        <div class="tableCell">${rule[line][3]} ${ruleSelections[0]}</div>
+                    </div>`
+            }
+        }
+    }
+    $("#vanishing").html(firsthtml);
+    $("#newline").html(secondhtml);
+}
+
+const waitingForInput = (ruleLine) => {
+    if (ruleSelections[ruleLine] === null && ruleSelections[ruleLine - 1] !== null) {
+        return ' active';
+    } else {
+        return '';
+    }
+}
+
+const renderAll = () => {
+    renderProof();
+    renderRule();
+}
+
+const finishRuleApplication = () => {
+    buttonsActive({
+        premiseOrAssumption: false,
+        symbolInput: false,
+        inference: false,
+        cancel: false,
+        reset: true
+    });
+    renderRule();
+    $("#vanishing").fadeOut(500, () => {//consider making this happen instantly
+        $("#vanishing").css({ "visibility": "hidden", display: 'block' }).slideUp(500, () => {
+            resetRuleVariablesAndSelections();
+            renderAll();
+            $("#vanishing").show();
+            $("#vanishing").css('visibility', 'visible');
+            buttonsActive({
+                premiseOrAssumption: true,
+                inference: true
+            });
+        })
+    });
+}
+
+const negationOf = (right) => { return { type: 'negation', right: right } }
+const conjunctionOf = (left, right) => { return { type: 'conjunction', left: left, right: right } }
+const disjunctionOf = (left, right) => { return { type: 'disjunction', left: left, right: right } }
+const conditionalOf = (left, right) => { return { type: 'conditional', left: left, right: right } }
+const biconditionalOf = (left, right) => { return { type: 'biconditional', left: left, right: right } }
+
+let a, b, c, g, h, i, j, k, m, p, q, r, enteredDisjunct, ruleSelections;
+const resetRuleVariablesAndSelections = () => {
+    a = 'a<sub>1</sub>,...,a<sub>n</sub>';
+    b = 'b<sub>1</sub>,...,b<sub>u</sub>';
+    c = 'c<sub>1</sub>,...,c<sub>w</sub>';
+    g = 'g'; h = 'h'; i = 'i'; j = 'j'; k = 'k'; m = 'm';
+    p = { type: 'atomic', letter: 'p' };
+    q = { type: 'atomic', letter: 'q' };
+    r = { type: 'atomic', letter: 'r' };
+    enteredDisjunct = { formula: { type: 'empty', letter: '_' } };
+    ruleSelections = [null, null, null, null, null, null];
+    theContradiction = {type: 'atomic', letter: symbols.contradiction}
+}
+
+const cancel = () => {
+    if (activeFormula) {
+        proof.splice(activeFormula.split(".")[0], 1);
+    }
+    activeElement = null;
+    activeFormula = null;
+    resetRuleVariablesAndSelections();
+    renderAll();
+    buttonsActive({
+        symbolInput: false,
+        premiseOrAssumption: true,
+        inference: proof.length > 1,
+        reset: proof.length > 1,
+        cancel: false
+    });
+}
+
+const reset = () => {
+    proof = [null];
+    activeElement = null;
+    activeFormula = null;
+    resetRuleVariablesAndSelections();
+    renderAll();
+    $("#vanishing").show();
+    $("#vanishing").css('visibility', 'visible');
+    buttonsActive({
+        symbolInput: false,
+        premiseOrAssumption: true,
+        inference: false,
+        reset: false,
+        cancel: false
+    });
+}
+
+//Initialisation
+let proof = [null];
+let activeElement;
+let activeFormula;
+let symbols = {
+    negation: '¬',
+    conjunction: '∧',
+    disjunction: '∨',
+    conditional: '→',
+    biconditional: '↔',
+    contradiction: '⊥'
+};
+resetRuleVariablesAndSelections();
+//renderAll();
+['P', 'Q', 'R', 'S', symbols.contradiction].forEach(letter => {
+    createButton(`insert("atomic","${letter}")`, letter, 'symbolInput')
+});
+Object.keys(symbols).forEach(connective => {
+    if (connective !== 'contradiction') {
+        createButton(`insert("${connective}","")`, symbols[connective], 'symbolInput')
+    }
+});
+createButton(`addPremiseOrAssumption('Premise')`, 'Add premise', 'premiseOrAssumption');
+createButton(`addPremiseOrAssumption('Assumption')`, 'Add assumption', 'premiseOrAssumption');
+Object.keys(symbols).forEach(connective => {
+    if (connective !== 'contradiction') {
+        ['E', 'I'].forEach(act => {
+            createButton(`ruleSelection('${symbols[connective]}${act}')`, `${symbols[connective]}${act}`, 'inference');
+        })
+    }
+})
+createButton(`ruleSelection('DN')`, `DN`, 'inference');
+createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference');
+createButton('cancel()', 'Cancel', 'cancel');
+createButton('reset()', 'Clear all', 'reset');
+buttonsActive({
+    symbolInput: false,
+    inference: false,
+    reset: false,
+    cancel: false
+});

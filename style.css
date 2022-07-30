@@ -1,0 +1,166 @@
+body {
+    background: #EEE;
+    cursor: default;
+    overflow-wrap: break-word;
+  }
+  
+
+  
+
+
+
+  .table {
+    display: table;
+    margin: 20px auto;
+  }
+
+  .tableRow {
+    display: table-row;
+    background: #f4f7f8;
+  }
+
+  .tableCell {
+    display: table-cell;
+    border: 1px solid #EEE;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    padding: 10px;
+    font-size: 18px;
+  }
+
+  .tableRow .tableCell:nth-child(1) {
+    min-width: 150px;
+    max-width: 150px;
+    text-align: right;
+  }
+
+  .tableRow .tableCell:nth-child(2) {
+    min-width: 35px;
+    max-width: 35px;
+    text-align: center;
+  }
+
+  .tableRow .tableCell:nth-child(3) {
+    min-width: 300px;
+    max-width: 300px;
+    text-align: left;
+  }
+
+  .tableRow .tableCell:nth-child(4) {
+    min-width: 100px;
+    max-width: 100px;
+    text-align: right;
+  }
+
+  .tableRowSeperator {
+    display: table-row;
+    height: 50px;
+  }
+
+  .tableRowRulename {
+    display: table-row;
+  }
+
+  .tableCellRulename {
+    display: table-cell;
+    font-family: 'Lato', sans-serif;
+    text-align: left;
+    font-weight: bold;
+    padding: 10px;
+    font-size: 18px;
+  }
+
+  .tableRowVdots {
+    display: table-row;
+  }
+
+  .tableCellVdots {
+    display: table-cell;
+    font-family: 'Lato', sans-serif;
+    padding-top: 3px;
+  }
+
+  .tableRowVdots .tableCellVdots:nth-child(1) {
+    min-width: 150px;
+  }
+
+  .tableRowVdots .tableCellVdots:nth-child(2) {
+    min-width: 35px;
+    text-align: center;
+  }
+
+
+
+
+  .active {
+    background: #88CCF1 !important;
+  }
+  
+  .selectable {
+    background: #0099cc !important;
+    color: #ffffff;
+  }
+ 
+  .selectable:hover {
+    background: #00aacc !important;
+    color: #ffffff !important;
+  }
+
+
+
+
+
+  button {
+    font-size: 18px;
+    border: 1px solid #0066cc;
+    background-color: #0099cc;
+    color: #ffffff;
+    padding: 5px 10px;
+    margin: 5px;
+  }
+  
+  button:hover {
+    border: 1px solid #0099cc;
+    background-color: #00aacc;
+    color: #ffffff;
+  }
+  
+  button:disabled,
+  button[disabled]{
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
+  }
+
+
+
+
+    /* Navigation */
+  
+  /*.navigation {
+    box-sizing: border-box;
+    background-color: #3587A4;
+    overflow: auto;
+    padding: 18px 50px;
+    position: relative;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+  
+  ul {
+    padding: 0;
+    margin: 0;
+  }
+  
+  li {
+    color: #FFF;
+    display: inline-block;
+    font-family: 'Oxygen', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin: 0;
+    padding: 20px 18px 10px 18px;
+    text-transform: uppercase;
+  }*/
