@@ -38,9 +38,11 @@ const stringPar = (formula, id = '') => {
 
 const renderProof = () => {
     let rows = '';
+    let anyEligibleLines = false;
     for (let i = 1; i < proof.length; i++) {
         if (testEligibilityOfLine(i)) {
             rows += `<div class="tableRow selectable" onclick="lineSelection(${i})">`;
+            anyEligibleLines = true;
         } else {
             rows += '<div class="tableRow">';
         }
@@ -48,6 +50,7 @@ const renderProof = () => {
             <div class="tableCell">(${i})</div>`;
         if (testEligibilityOfLine(i, 'conjuncts')) {
             rows += `<div class="tableCell">${stringSelectableConjuncts(proof[i]['formula'], i)}</div>`;
+            anyEligibleLines = true;
         } else if (proof[i]['beingEdited']) {
             rows += `<div class="tableCell">${string(proof[i]['formula'], i + '.formula')}</div>`;
         } else {
@@ -57,6 +60,29 @@ const renderProof = () => {
             </div>`;
     }
     $("#proof").html(rows);
+    if (ruleSelections[0] !== null) {
+        if (ruleSelections[1] === null) {
+            if (ruleSelections[0] !== `${symbols.conjunction}E`) {
+                if (anyEligibleLines) {
+                    help('inference-first');
+                } else {
+                    help('inference-first-fail');
+                }
+            } else {
+                if (anyEligibleLines) {
+                    help('conelim');
+                } else {
+                    help('conelim-fail');
+                }
+            }
+        } else {
+            if (anyEligibleLines) {
+                help('inference-next');
+            } else {
+                help('inference-next-fail');
+            }
+        }
+    }
 }
 
 const addPremiseOrAssumption = (premiseOrAssumption) => {
@@ -73,12 +99,23 @@ const addPremiseOrAssumption = (premiseOrAssumption) => {
     renderProof();
     makeActive(document.getElementById(`${proof.length - 1}.formula`), 'justThis');
     buttonsActive({
-        premiseOrAssumption: false,
         symbolInput: true,
-        inference: false,
         cancel: true,
         reset: true
+    }, {
+        [(premiseOrAssumption === "Premise") ? 'Addpremise' : 'Addassumption']: false
     })
+    help((proof.length === 2) ?
+        (premiseOrAssumption === "Premise") ?
+            'premise-first-nolines'
+            :
+            'assumption-first-nolines'
+        :
+        (premiseOrAssumption === "Premise") ?
+            'premise-first-existinglines'
+            :
+            'assumption-first-existinglines'
+    );
 }
 
 const makeActive = (clickedOrInsertedElement, thisOrParentOrChild) => {
@@ -99,6 +136,10 @@ const makeActive = (clickedOrInsertedElement, thisOrParentOrChild) => {
 
 const insert = (type, symbol = '') => {
     if (activeFormula) {
+        buttonsActive({
+            premiseOrAssumption: false,
+            inference: false            
+        })
         let array = activeFormula.split(".");
         let obj = (ruleSelections[0] === null) ? proof : enteredDisjunct;
         while (array.length > 1) {
@@ -109,6 +150,7 @@ const insert = (type, symbol = '') => {
                 obj[array.shift()] = { type: 'atomic', letter: symbol };
                 if (ruleSelections[0] === null) {
                     renderProof();
+                    help('premiseorassumption-next');
                 } else {
                     ruleVariableUpdate(null, 'callFromInsertUnfinished');
                     renderRule();
@@ -125,6 +167,7 @@ const insert = (type, symbol = '') => {
                             inference: true,
                             cancel: false
                         });
+                        help('noactiveinput-existinglines');
                     } else {
                         activeElement = undefined;
                         activeFormula = undefined;
@@ -147,6 +190,7 @@ const insert = (type, symbol = '') => {
                 obj[array.shift()] = { type: 'negation', right: { type: 'empty', letter: '_' } };
                 if (ruleSelections[0] === null) {
                     renderProof();
+                    help('premiseorassumption-next');
                 } else {
                     ruleVariableUpdate(null, 'callFromInsertUnfinished');
                     renderRule();
@@ -157,6 +201,7 @@ const insert = (type, symbol = '') => {
                 obj[array.shift()] = { type: type, left: { type: 'empty', letter: '_' }, right: { type: 'empty', letter: '_' } };
                 if (ruleSelections[0] === null) {
                     renderProof();
+                    help('premiseorassumption-next');
                 } else {
                     ruleVariableUpdate(null, 'callFromInsertUnfinished');
                     renderRule();
@@ -171,7 +216,7 @@ const createButton = (onclick, label, buttonClass) => {
     const button = document.createElement('button');
     button.setAttribute('onclick', onclick);
     button.setAttribute('class', buttonClass);
-    button.setAttribute('ID', label);
+    button.setAttribute('ID', label.replace(/\s/g, ''));
     button.innerHTML = label;
     document.getElementById('buttons').appendChild(button);
 }
@@ -186,10 +231,13 @@ const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
 }
 
 const ruleSelection = (rule) => {
+    cancel();
     ruleSelections = [rule, null, null, null, null, null];
     renderAll();
     buttonsActive({
         cancel: true,
+        premiseOrAssumption: true,
+        symbolInput: false,
         inference: true
     }, {
         [rule]: false
@@ -426,6 +474,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                     a = proof[proofLine]['dependencies'];
                     p = proof[proofLine]['formula'];
                     renderAll();
+                    help('disintro-pick');
                     break;
                 }
                 case 2: {
@@ -435,10 +484,12 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                     });
                     renderAll();
                     makeActive(document.getElementById('formula'), 'justThis');
+                    help('disintro-first');
                     break;
                 }
                 case 'callFromInsertUnfinished': {
                     q = enteredDisjunct['formula'];
+                    help('disintro-next');
                     break;
                 }
                 case 'callFromInsertFinished': {
@@ -646,10 +697,12 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                     });
                     renderAll();
                     makeActive(document.getElementById('formula'), 'justThis');
+                    help('efq-first');
                     break;
                 }
                 case 'callFromInsertUnfinished': {
                     p = enteredDisjunct['formula'];
+                    help('efq-next');
                     break;
                 }
                 case 'callFromInsertFinished': {
@@ -851,6 +904,7 @@ const finishRuleApplication = () => {
         reset: true
     });
     renderRule();
+    help();
     $("#vanishing").fadeOut(500, () => {//consider making this happen instantly
         $("#vanishing").css({ "visibility": "hidden", display: 'block' }).slideUp(500, () => {
             resetRuleVariablesAndSelections();
@@ -861,6 +915,7 @@ const finishRuleApplication = () => {
                 premiseOrAssumption: true,
                 inference: true
             });
+            help('noactiveinput-existinglines');
         })
     });
 }
@@ -882,7 +937,7 @@ const resetRuleVariablesAndSelections = () => {
     r = { type: 'atomic', letter: 'r' };
     enteredDisjunct = { formula: { type: 'empty', letter: '_' } };
     ruleSelections = [null, null, null, null, null, null];
-    theContradiction = {type: 'atomic', letter: symbols.contradiction}
+    theContradiction = { type: 'atomic', letter: symbols.contradiction }
 }
 
 const cancel = () => {
@@ -900,6 +955,7 @@ const cancel = () => {
         reset: proof.length > 1,
         cancel: false
     });
+    help((proof.length === 1) ? 'noactiveinput-nolines' : 'noactiveinput-existinglines');
 }
 
 const reset = () => {
@@ -917,6 +973,14 @@ const reset = () => {
         reset: false,
         cancel: false
     });
+    help('noactiveinput-nolines');
+}
+
+const help = (id = '') => {
+    $("#contextual-help").children().css("display", "none");
+    if (id) {
+        $(`#${id}`).css("display", "block");
+    }
 }
 
 //Initialisation
@@ -932,8 +996,7 @@ let symbols = {
     contradiction: '⊥'
 };
 resetRuleVariablesAndSelections();
-//renderAll();
-['P', 'Q', 'R', 'S', symbols.contradiction].forEach(letter => {
+['A', 'B', 'C', 'D', symbols.contradiction].forEach(letter => {
     createButton(`insert("atomic","${letter}")`, letter, 'symbolInput')
 });
 Object.keys(symbols).forEach(connective => {
@@ -955,8 +1018,9 @@ createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference');
 createButton('cancel()', 'Cancel', 'cancel');
 createButton('reset()', 'Clear all', 'reset');
 buttonsActive({
+    premiseOrAssumption: false,
     symbolInput: false,
     inference: false,
-    reset: false,
+    reset: true,
     cancel: false
 });

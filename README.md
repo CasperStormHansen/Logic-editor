@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.1**
+**Version 0.2**
 
 **Author: Casper Storm Hansen**
 
@@ -8,7 +8,7 @@ The Logic Editor web app lets user create natural deduction proofs as taught in,
 
 This document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective (which again presupposes basic knowledge of natural deduction proofs in formal logic).
 
-Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. The short section 4 explains initialization and resetting. And a final section lists planned updates.
+Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. The short section 4 explains initialization and resetting. Section 5 contains the version history. And a final section lists planned updates.
 
 Disclaimer: I am quite ignorant of the conventions normally governing the writing of technical documentation, and have therefore probably violated many of them below. 
 
@@ -26,7 +26,7 @@ The `proof` object is a list of objects that correspond to the lines of the proo
 - `inferenceSources`: the lines it was inferred from, if any
 - `beingEdited`: a Boolean (may be absent, which represents false)
 
-The function `renderProof` converts the internal `proof` object to html which is then placed in a designated `<div>`. Each update of the proof, as shown to the user, happens by a complete replacement of the content of this `<div>`. The `renderProof` function calls the above-mentioned `string` function, as well as two other functions, which are described in section 3.
+The function `renderProof` converts the internal `proof` object to html which is then placed in a designated `<div>`. Each update of the proof, as shown to the user, happens by a complete replacement of the content of this `<div>`. The `renderProof` function calls the above-mentioned `string` function, as well as three other functions, which are described below.
 
 ## 2 Addition of premises and assumptions
 
@@ -36,7 +36,7 @@ First, it calls `cancel`, the same function that is directly called by the "Canc
 
 Second, it adds an "empty line" to `proof`, and calls `renderProof`, which will assign `id`s to the new formula and (later, when it is modified by the user to become a complex formula) its sub-formulas.
 
-Third, it calls the function `makeActive`, and fourth, it changes which buttons are active (using the `buttonsActive` function). In this case, `makeActive` adds the `.active` class to the new formula's DOM element, lets the variable `activeElement` be equal to that element, and lets the variable `activeFormula` be equal to its `id`. This ensures that the empty formula is highlighted, so the user can see where further input will go, and that further input actually goes there when the user clicks a button for a propositional letter or connective.
+Third, it calls the function `makeActive`; fourth, it changes which buttons are active (using the `buttonsActive` function); and fifth, it changes the contextual help shown to the user (using the `help` function). In this case, `makeActive` adds the `.active` class to the new formula's DOM element, lets the variable `activeElement` be equal to that element, and lets the variable `activeFormula` be equal to its `id`. This ensures that the empty formula is highlighted, so the user can see where further input will go, and that further input actually goes there when the user clicks a button for a propositional letter or connective.
 
 Such input is handled by the `insert` function. It first identifies the object in the `proof` tree that should be modified and lets `obj` refer to the object *one step above* it. It does so by relying on the `id`, which has a structure that reflects the path down in the tree to the desired object. For example, the `id` might be "3.formula.left.left.right". The variable `array` is initially set equal to the list that results from splitting this string at ".", and then these elements are removed, starting from the beginning, as the `obj` is progressively redefined to objects deeper and deeper in the tree. This happens in the first few lines of `insert`'s code. When the `switch` is reached, the array has one element left, so in the example it would be equal to `['right']`. In each of the three `case`s under the `switch`, `obj['right']` would then be set equal to the desired sub-formula. This ensures that `proof` is modified, and not just `obj`.
 
@@ -78,18 +78,23 @@ Two special cases must be mentioned, namely disjunction-introduction and EFQ tha
 
 ## 4 Initialization and reset
 
-The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function.
+The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown.
 
 In addition, at this point the dictionary `symbols` is defined. In a future update it will be possible for the user to change it, so the app uses their preferred logical symbols.
 
-## 5 Planned updates
+## 5 Version history
+
+v0.1: Initial version
+
+v0.2: Contextual help added; example proof shown at page load; minor tweak to how buttons (de)activate
+
+## 6 Planned updates
 
 The app will be update with the following:
 - a visual design that is non-ugly and with color choices that are suggestive of function
 - user-friendliness, specifically
--- contextual help that will make the app self-explanatory (at least to the intended users)
--- more support for the user being able to change his/her mind without having to start over
--- mouseover on a button will in some cases show the result of the button being clicked
+    - more support for the user being able to change his/her mind without having to start over
+    - mouseover on a button will in some cases show the result of the button being clicked
 - premises will always appear before other lines
 - extension to predicate logic
 - upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
