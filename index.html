@@ -10,177 +10,281 @@
 </head>
 
 <body>
-  <div id="buttons">
+  <div id="buttons-and-help">
+    <div id="buttons">
+      <div id="add"></div>
+      <div id="elim"></div>
+      <div id="intro" class="end-of-group"></div>
+      <div id="con"></div>
+      <div id="letter" class="end-of-group"></div>
+      <div id="delete"></div>
+      <div id="finish"></div>
+    </div>
+    <div id="help">
+      <div id="welcome">
+        <p>Welcome to the Logic Editor!</p>
+        <p>
+          Here you can do natural deduction proofs in propositional logic by entering premises and assumptions, and
+          automatically applying inference rules.</p>
+        <p>
+          An example of a finished proof is currently shown.</p>
+        <p>
+          Click on “Clear all” to begin your own proof.</p>
+      </div>
 
-  </div>
-  <div class="table">
-    <div id="proof">
-      <div id="proof">
-        <div class="tableRow">
-          <div class="tableCell">1</div>
-          <div class="tableCell">(1)</div>
-          <div class="tableCell">A → B</div>
-          <div class="tableCell"> Premise</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">2</div>
-          <div class="tableCell">(2)</div>
-          <div class="tableCell">¬ B</div>
-          <div class="tableCell"> Assumption</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">3</div>
-          <div class="tableCell">(3)</div>
-          <div class="tableCell">A</div>
-          <div class="tableCell"> Assumption</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">1,3</div>
-          <div class="tableCell">(4)</div>
-          <div class="tableCell">B</div>
-          <div class="tableCell">1,3 →E</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">1,2,3</div>
-          <div class="tableCell">(5)</div>
-          <div class="tableCell">⊥</div>
-          <div class="tableCell">2,4 ¬E</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">1,2</div>
-          <div class="tableCell">(6)</div>
-          <div class="tableCell">¬ A</div>
-          <div class="tableCell">3,5 ¬I</div>
-        </div>
-        <div class="tableRow">
-          <div class="tableCell">1</div>
-          <div class="tableCell">(7)</div>
-          <div class="tableCell">¬ B → ¬ A</div>
-          <div class="tableCell">2,6 →I</div>
-        </div>
+      <div id="noactiveinput-nolines" style="display:none">
+        <p>To begin your proof, add a premise or an assumption.</p>
+      </div>
+
+      <div id="noactiveinput-existinglines" style="display:none">
+        <p>Add a premise or an assumption.</p>
+        <p>
+          Or choose an inference rule to be applied.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+
+
+      <div id="premise-first-nolines" style="display:none">
+        <p>Choose the premise’s <i>main</i> connective.</p>
+        <p>
+          Or, if the premise is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed you mind, choose to add an assumption instead.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="premise-first-existinglines" style="display:none">
+        <p>Choose the premise’s <i>main</i> connective.</p>
+        <p>
+          Or, if the premise is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed you mind, choose to add an assumption or apply an inference rule instead.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="assumption-first-nolines" style="display:none">
+        <p>Choose the assumption’s <i>main</i> connective.</p>
+        <p>
+          Or, if the assumption is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed you mind, choose to add a premise instead.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="assumption-first-existinglines" style="display:none">
+        <p>Choose the assumption’s <i>main</i> connective.</p>
+        <p>
+          Or, if the assumption is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed you mind, choose to add a premise or apply an inference rule instead.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="premiseorassumption-next" style="display:none">
+        <p>Choose the main connective for the currently selected sub-formula.</p>
+        <p>
+          Or, if this sub-formula is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or click on a different part of the formula to input that first.</p>
+        <p class="deemphasise">
+          (Non-empty parts of the formula can be selected to be overwriten.)</p>
+        <p class="deemphasise">
+          Or cancel the addition of the current line.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+
+
+      <div id="inference-first" style="display:none">
+        <p>Choose a line in the already existing part of the proof to play the
+          role of the highlighed line in the inference rule. Black lines have the required form, and can be selected.
+        </p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, choose an alternative to this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="inference-next" style="display:none">
+        <p>Choose a line in the already existing part of the proof to play the
+          role of the highlighed line in the inference rule. Black lines have the required form, and can be selected.
+        </p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, cancel the application of this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="inference-first-fail" style="display:none">
+        <p>There is no line in the already existing part of the proof that
+          has the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of
+          this rule.</p>
+        <p>
+          Instead, choose another inference rule to be applied.</p>
+        <p class="deemphasise">
+          Or add a premise or an assumption.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="inference-next-fail" style="display:none">
+        <p>There is no line in the already existing part of the proof that has
+          the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of this
+          rule.</p>
+        <p>
+          Therefore, click on “cancel".</p>
+        <p>
+          Then choose another inference rule to be applied or add a premise or an assumption.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+
+
+      <div id="disintro-pick" style="display:none">
+        <p>Decide if you want the existing disjunct to be the left one in the new
+          line’s formula and the new one the right one, or vise versa.</p>
+        <p class="deemphasise">
+          Or cancel the application of the current rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="disintro-first" style="display:none">
+        <p>Choose the main connective for the new disjunct.</p>
+        <p>
+          Or, if this disjunct is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, cancel the application of this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="disintro-next" style="display:none">
+        <p>Choose the main connective for the currently selected sub-formula.</p>
+        <p>
+          Or, if this sub-formula is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or click on a different part of the formula to input that first.</p>
+        <p class="deemphasise">
+          (Non-empty parts of the new disjunct can be selected to be overwriten.)</p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, cancel the application of this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+
+
+      <div id="efq-first" style="display:none">
+        <p>Choose the main connective for the new formula.</p>
+        <p>
+          Or, if this formula is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, cancel the application of this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="efq-next" style="display:none">
+        <p>Choose the main connective for the currently selected sub-formula.</p>
+        <p>
+          Or, if this sub-formula is atomic, choose its propositional letter.</p>
+        <p class="deemphasise">
+          Or click on a different part of the formula to input that first.</p>
+        <p class="deemphasise">
+          (Non-empty parts of the formula can be selected to be overwriten.)</p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, cancel the application of this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+
+
+      <div id="conelim" style="display:none">
+        <p>Choose a conjunct in the already existing part of the proof. The options are shown on a black background.</p>
+        <p class="deemphasise">
+          Or, if you have changed your mind, choose an alternative to this inference rule.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
+      </div>
+
+      <div id="conelim-fail" style="display:none">
+        <p>None of the lines in the existing part of the proof has a conjunction as
+          its main connective. You therefore cannot continue with the application of this rule.</p>
+        <p>
+          Instead, choose another inference rule to be applied.</p>
+        <p class="deemphasise">
+          Or add a premise or an assumption.</p>
+        <p class="deemphasise">
+          Or click “Clear all” to start over.</p>
       </div>
     </div>
-    <div id="vanishing">
-
-    </div>
-    <div id="newline">
-
-    </div>
   </div>
+  <div id="topmargin"></div>
+  <div id="table-wrapper">
+    <div class="table">
+      <div id="proof">
+        <div id="proof">
+          <div class="tableRow">
+            <div class="tableCell">1</div>
+            <div class="tableCell">(1)</div>
+            <div class="tableCell">A → B</div>
+            <div class="tableCell"> Premise</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">2</div>
+            <div class="tableCell">(2)</div>
+            <div class="tableCell">¬ B</div>
+            <div class="tableCell"> Assumption</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">3</div>
+            <div class="tableCell">(3)</div>
+            <div class="tableCell">A</div>
+            <div class="tableCell"> Assumption</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">1,3</div>
+            <div class="tableCell">(4)</div>
+            <div class="tableCell">B</div>
+            <div class="tableCell">1,3 →E</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">1,2,3</div>
+            <div class="tableCell">(5)</div>
+            <div class="tableCell">⊥</div>
+            <div class="tableCell">2,4 ¬E</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">1,2</div>
+            <div class="tableCell">(6)</div>
+            <div class="tableCell">¬ A</div>
+            <div class="tableCell">3,5 ¬I</div>
+          </div>
+          <div class="tableRow">
+            <div class="tableCell">1</div>
+            <div class="tableCell">(7)</div>
+            <div class="tableCell">¬ B → ¬ A</div>
+            <div class="tableCell">2,6 →I</div>
+          </div>
+        </div>
+      </div>
+      <div id="vanishing">
 
-  <div id="contextual-help">
-    <p id="welcome">Welcome to the Logic Editor!<br>
-      Here you can do natural deduction proofs in propositional logic by entering premises and assumptions, and
-      automatically applying inference rules.<br>
-      An example of a finished proof is currently shown.<br>
-      Click on “Clear all” to begin your own proof.</p>
+      </div>
+      <div id="newline">
 
-    <p id="noactiveinput-nolines" style="display:none">To begin your proof, add a premise or an assumption.</p>
-
-    <p id="noactiveinput-existinglines" style="display:none">Add a premise or an assumption.<br>
-      Or choose an inference rule to be applied.<br>
-      Or click “Clear all” to start over.</p>
-
-
-
-    <p id="premise-first-nolines" style="display:none">Choose the premise’s <i>main</i> connective.<br>
-      Or, if the premise is atomic, choose its propositional letter.<br>
-      Or, if you have changed you mind, choose to add an assumption instead.<br>
-      Or click “Clear all” to start over.<br>
-
-    <p id="premise-first-existinglines" style="display:none">Choose the premise’s <i>main</i> connective.<br>
-      Or, if the premise is atomic, choose its propositional letter.<br>
-      Or, if you have changed you mind, choose to add an assumption or apply an inference rule instead.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="assumption-first-nolines" style="display:none">Choose the assumption’s <i>main</i> connective.<br>
-      Or, if the assumption is atomic, choose its propositional letter.<br>
-      Or, if you have changed you mind, choose to add a premise instead.<br>
-      Or click “Clear all” to start over.<br>
-
-    <p id="assumption-first-existinglines" style="display:none">Choose the assumption’s <i>main</i> connective.<br>
-      Or, if the assumption is atomic, choose its propositional letter.<br>
-      Or, if you have changed you mind, choose to add a premise or apply an inference rule instead.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="premiseorassumption-next" style="display:none">Choose the main connective for the currently selected
-      sub-formula.<br>
-      Or, if this sub-formula is atomic, choose its propositional letter.<br>
-      Or click on a different part of the formula to input that first.<br>
-      (Non-empty parts of the formula can be selected to be overwriten.)<br>
-      Or cancel the addition of the current line.<br>
-      Or click “Clear all” to start over.</p>
-
-
-
-    <p id="inference-first" style="display:none">Choose a line in the already existing part of the proof to play the
-      role of the highlighed line in the inference rule.<br>
-      Or, if you have changed your mind, choose an alternative to this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="inference-next" style="display:none">Choose a line in the already existing part of the proof to play the role
-      of the highlighed line in the inference rule.<br>
-      Or, if you have changed your mind, cancel the application of this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="inference-first-fail" style="display:none">There is no line in the already existing part of the proof that
-      has the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of this
-      rule.<br>
-      Instead, choose another inference rule to be applied.<br>
-      Or add a premise or an assumption.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="inference-next-fail" style="display:none">There is no line in the already existing part of the proof that has
-      the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of this
-      rule.<br>
-      Therefore, click on “cancel".<br>
-      Then choose another inference rule to be applied or add a premise or an assumption.<br>
-      Or click “Clear all” to start over.</p>
-
-
-
-    <p id="disintro-pick" style="display:none">Decide if you want the existing disjunct to be the left one in the new
-      line’s formula and the new one the right one, or vise versa.<br>
-      Or cancel the application of the current rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="disintro-first" style="display:none">Choose the main connective for the new disjunct.<br>
-      Or, if this disjunct is atomic, choose its propositional letter.<br>
-      Or, if you have changed your mind, cancel the application of this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="disintro-next" style="display:none">Choose the main connective for the currently selected sub-formula.<br>
-      Or, if this sub-formula is atomic, choose its propositional letter.<br>
-      Or click on a different part of the formula to input that first.<br>
-      (Non-empty parts of the new disjunct can be selected to be overwriten.)<br>
-      Or, if you have changed your mind, cancel the application of this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-
-
-    <p id="efq-first" style="display:none">Choose the main connective for the new formula.<br>
-      Or, if this formula is atomic, choose its propositional letter.<br>
-      Or, if you have changed your mind, cancel the application of this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="efq-next" style="display:none">Choose the main connective for the currently selected sub-formula.<br>
-      Or, if this sub-formula is atomic, choose its propositional letter.<br>
-      Or click on a different part of the formula to input that first.<br>
-      (Non-empty parts of the formula can be selected to be overwriten.)<br>
-      Or, if you have changed your mind, cancel the application of this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-
-
-    <p id="conelim" style="display:none">Choose a conjunct in the already existing part of the proof.<br>
-      Or, if you have changed your mind, choose an alternative to this inference rule.<br>
-      Or click “Clear all” to start over.</p>
-
-    <p id="conelim-fail" style="display:none">None of the lines in the existing part of the proof has a conjunction as
-      its main connective. You therefore cannot continue with the application of this rule.<br>
-      Instead, choose another inference rule to be applied.<br>
-      Or add a premise or an assumption.<br>
-      Or click “Clear all” to start over.</p>
+      </div>
+    </div>
   </div>
 </body>
 

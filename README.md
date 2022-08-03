@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.2**
+**Version 0.3**
 
 **Author: Casper Storm Hansen**
 
@@ -88,10 +88,11 @@ v0.1: Initial version
 
 v0.2: Contextual help added; example proof shown at page load; minor tweak to how buttons (de)activate
 
+v0.3: Visual design improved
+
 ## 6 Planned updates
 
 The app will be update with the following:
-- a visual design that is non-ugly and with color choices that are suggestive of function
 - user-friendliness, specifically
     - more support for the user being able to change his/her mind without having to start over
     - mouseover on a button will in some cases show the result of the button being clicked

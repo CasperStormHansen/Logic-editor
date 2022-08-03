@@ -138,7 +138,7 @@ const insert = (type, symbol = '') => {
     if (activeFormula) {
         buttonsActive({
             premiseOrAssumption: false,
-            inference: false            
+            inference: false
         })
         let array = activeFormula.split(".");
         let obj = (ruleSelections[0] === null) ? proof : enteredDisjunct;
@@ -212,13 +212,13 @@ const insert = (type, symbol = '') => {
     }
 }
 
-const createButton = (onclick, label, buttonClass) => {
+const createButton = (onclick, label, buttonClass, location) => {
     const button = document.createElement('button');
     button.setAttribute('onclick', onclick);
     button.setAttribute('class', buttonClass);
     button.setAttribute('ID', label.replace(/\s/g, ''));
     button.innerHTML = label;
-    document.getElementById('buttons').appendChild(button);
+    document.getElementById(location).appendChild(button);
 }
 
 const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
@@ -977,7 +977,7 @@ const reset = () => {
 }
 
 const help = (id = '') => {
-    $("#contextual-help").children().css("display", "none");
+    $("#help").children().css("display", "none");
     if (id) {
         $(`#${id}`).css("display", "block");
     }
@@ -996,27 +996,37 @@ let symbols = {
     contradiction: '⊥'
 };
 resetRuleVariablesAndSelections();
-['A', 'B', 'C', 'D', symbols.contradiction].forEach(letter => {
-    createButton(`insert("atomic","${letter}")`, letter, 'symbolInput')
-});
+createButton(`addPremiseOrAssumption('Premise')`, 'Add premise', 'premiseOrAssumption', 'add');
+createButton(`addPremiseOrAssumption('Assumption')`, 'Add assumption', 'premiseOrAssumption', 'add');
 Object.keys(symbols).forEach(connective => {
     if (connective !== 'contradiction') {
-        createButton(`insert("${connective}","")`, symbols[connective], 'symbolInput')
-    }
-});
-createButton(`addPremiseOrAssumption('Premise')`, 'Add premise', 'premiseOrAssumption');
-createButton(`addPremiseOrAssumption('Assumption')`, 'Add assumption', 'premiseOrAssumption');
-Object.keys(symbols).forEach(connective => {
-    if (connective !== 'contradiction') {
-        ['E', 'I'].forEach(act => {
-            createButton(`ruleSelection('${symbols[connective]}${act}')`, `${symbols[connective]}${act}`, 'inference');
-        })
+        createButton(`ruleSelection('${symbols[connective]}E')`, `${symbols[connective]}E`, 'inference', 'elim');
     }
 })
-createButton(`ruleSelection('DN')`, `DN`, 'inference');
-createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference');
-createButton('cancel()', 'Cancel', 'cancel');
-createButton('reset()', 'Clear all', 'reset');
+createButton(`ruleSelection('DN')`, `DN`, 'inference', 'elim');
+Object.keys(symbols).forEach(connective => {
+    if (connective !== 'contradiction') {
+        createButton(`ruleSelection('${symbols[connective]}I')`, `${symbols[connective]}I`, 'inference', 'intro');
+    }
+})
+createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference', 'intro');
+Object.keys(symbols).forEach(connective => {
+    if (connective !== 'contradiction') {
+        createButton(`insert("${connective}","")`, symbols[connective], 'symbolInput', 'con')
+    } else {
+        createButton(`insert("atomic","${symbols.contradiction}")`, symbols.contradiction, 'symbolInput', 'con')
+    }
+});
+['A', 'B', 'C', 'D', 'E', 'F'].forEach(letter => {
+    createButton(`insert("atomic","${letter}")`, letter, 'symbolInput', 'letter')
+});
+createButton('cancel()', 'Cancel line', 'cancel', 'delete');
+const doesNotWork = () => {/////////////
+    alert("Sorry, this button does not work yet!");
+}
+createButton('doesNotWork()', 'Delete line', 'inference', 'delete');////////////
+createButton('reset()', 'Clear all', 'reset', 'delete');
+createButton('doesNotWork()', 'Finish proof', 'inference', 'finish');///////////
 buttonsActive({
     premiseOrAssumption: false,
     symbolInput: false,
