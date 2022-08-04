@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.3**
+**Version 0.4**
 
 **Author: Casper Storm Hansen**
 
@@ -97,9 +97,6 @@ v0.4: Option to delete last line added; visual warnings added for all buttons th
 ## 6 Planned updates
 
 The app will be update with the following:
-- user-friendliness, specifically
-    - more support for the user being able to change his/her mind without having to start over
-    - mouseover on a button will in some cases show the result of the button being clicked
 - premises will always appear before other lines
 - extension to predicate logic
 - upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
