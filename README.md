@@ -1,10 +1,6 @@
 # Logic Editor - code explanation
 
-<<<<<<< HEAD
 **Version 0.5**
-=======
-**Version 0.4**
->>>>>>> 6adb56df18703c2e22ea4d9aff993474076f135b
 
 **Author: Casper Storm Hansen**
 
@@ -103,10 +99,6 @@ v0.5: Changes to the inference rules; minor tweak to button design
 ## 6 Planned updates
 
 The app will be update with the following:
-<<<<<<< HEAD
-=======
-- premises will always appear before other lines
->>>>>>> 6adb56df18703c2e22ea4d9aff993474076f135b
 - extension to predicate logic
 - upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
 - a settings menu where symbols can be changed and the contextual help can be turned off
