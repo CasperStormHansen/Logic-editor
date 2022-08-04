@@ -78,9 +78,11 @@ Two special cases must be mentioned, namely disjunction-introduction and EFQ tha
 
 ## 4 Initialization and reset
 
-The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown.
+The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown. In addition, at this point the dictionary `symbols` is defined. In a future update it will be possible for the user to change it, so the app uses their preferred logical symbols.
 
-In addition, at this point the dictionary `symbols` is defined. In a future update it will be possible for the user to change it, so the app uses their preferred logical symbols.
+When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six function named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`.  And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
+
+The highlighting effect is only activated if the mouse stays over the button in question for more than 100 milliseconds - to avoid annoying "blinking" when the user unintentionally passes over the button. It is not activated at all when the example proof is shown, since the user should not be discouraged to delete that.
 
 ## 5 Version history
 
@@ -89,6 +91,8 @@ v0.1: Initial version
 v0.2: Contextual help added; example proof shown at page load; minor tweak to how buttons (de)activate
 
 v0.3: Visual design improved
+
+v0.4: Option to delete last line added; visual warnings added for all buttons that delete something; buttons reorganised according to whether they trigger high-level or low-level actions
 
 ## 6 Planned updates
 

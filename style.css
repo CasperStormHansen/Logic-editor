@@ -150,7 +150,7 @@ body {
 .tableRow .tableCell:nth-child(4) {
   min-width: 100px;
   max-width: 100px;
-  text-align: right;
+  text-align: left;
 }
 
 .tableRowSeperator {
@@ -192,20 +192,19 @@ body {
 }
 
 .active {
-  background: var(--insert-color) !important;
-  color: var(--insert-text-color) !important;
+  background: var(--insert-color);
+  color: var(--insert-text-color);
 }
 
 .selectable {
-  background: var(--button-active-color) !important;
+  background: var(--button-active-color);
   color: var(--button-active-text-color);
 }
 
 .selectable:hover {
-  background: var(--insert-color) !important;
-  color: var(--insert-text-color) !important;
+  background: var(--insert-color);
+  color: var(--insert-text-color);
 }
-
 
 
 
@@ -243,11 +242,11 @@ button[disabled] {
 }
 
 #delete>button {
-  width: 110px;
+  width: 167px;
 }
 
 #finish>button {
-  width: 110px;
+  width: 167px;
 }
 
 .end-of-group {

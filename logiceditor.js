@@ -40,11 +40,15 @@ const renderProof = () => {
     let rows = '';
     let anyEligibleLines = false;
     for (let i = 1; i < proof.length; i++) {
+        rows += '<div class="tableRow';
+        if (i + 1 === proof.length) {
+            rows += ' finalLine';
+        }
         if (testEligibilityOfLine(i)) {
-            rows += `<div class="tableRow selectable" onclick="lineSelection(${i})">`;
+            rows += ` selectable" onclick="lineSelection(${i})">`;
             anyEligibleLines = true;
         } else {
-            rows += '<div class="tableRow">';
+            rows += '">';
         }
         rows += `<div class="tableCell">${String(proof[i]['dependencies'])}</div>
             <div class="tableCell">(${i})</div>`;
@@ -165,7 +169,6 @@ const insert = (type, symbol = '') => {
                             premiseOrAssumption: true,
                             symbolInput: false,
                             inference: true,
-                            cancel: false
                         });
                         help('noactiveinput-existinglines');
                     } else {
@@ -209,24 +212,6 @@ const insert = (type, symbol = '') => {
                 makeActive(document.getElementById(activeFormula), 'firstChild');
                 break;
         }
-    }
-}
-
-const createButton = (onclick, label, buttonClass, location) => {
-    const button = document.createElement('button');
-    button.setAttribute('onclick', onclick);
-    button.setAttribute('class', buttonClass);
-    button.setAttribute('ID', label.replace(/\s/g, ''));
-    button.innerHTML = label;
-    document.getElementById(location).appendChild(button);
-}
-
-const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
-    for (const [key, value] of Object.entries(classesWithBoolean)) {
-        $(`.${key}`).attr('disabled', !value);
-    }
-    for (const [key, value] of Object.entries(IDsWithBoolean)) {
-        $(`#${key}`).attr('disabled', !value);
     }
 }
 
@@ -857,7 +842,7 @@ const renderRule = () => {
             </div>`
         for (var line = 1; line < rule.length; line++) {
             if (line < rule.length - 1) {
-                firsthtml += `<div class="tableRow${waitingForInput(line)}">
+                firsthtml += `<div class="tableRow ruleLine${waitingForInput(line)}">
                         <div class="tableCell">${rule[line][0]}</div>
                         <div class="tableCell">(${rule[line][1]})</div>
                         <div class="tableCell">${rule[line][2]}</div>`
@@ -869,7 +854,7 @@ const renderRule = () => {
                         <div class="tableCellVdots"></div><div class="tableCellVdots">&#8942;</div>
                     </div>`
             } else {
-                secondhtml += `<div class="tableRow">
+                secondhtml += `<div class="tableRow ruleLine">
                         <div class="tableCell">${rule[line][0]}</div>
                         <div class="tableCell">(${rule[line][1]})</div>
                         <div class="tableCell">${rule[line][2]}</div>
@@ -900,7 +885,6 @@ const finishRuleApplication = () => {
         premiseOrAssumption: false,
         symbolInput: false,
         inference: false,
-        cancel: false,
         reset: true
     });
     renderRule();
@@ -940,9 +924,11 @@ const resetRuleVariablesAndSelections = () => {
     theContradiction = { type: 'atomic', letter: symbols.contradiction }
 }
 
-const cancel = () => {
-    if (activeFormula) {
+const cancel = (fromCancelButton = false) => {
+    if (activeFormula && ruleSelections[0] === null) {
         proof.splice(activeFormula.split(".")[0], 1);
+    } else if (fromCancelButton && ruleSelections[0] === null) {
+        proof.pop();
     }
     activeElement = null;
     activeFormula = null;
@@ -953,9 +939,12 @@ const cancel = () => {
         premiseOrAssumption: true,
         inference: proof.length > 1,
         reset: proof.length > 1,
-        cancel: false
+        cancel: proof.length > 1
     });
     help((proof.length === 1) ? 'noactiveinput-nolines' : 'noactiveinput-existinglines');
+    if (fromCancelButton) {
+        showDeleteCandidates();
+    }
 }
 
 const reset = () => {
@@ -983,6 +972,82 @@ const help = (id = '') => {
     }
 }
 
+const createButton = (onclick, label, buttonClass, location, onenter = null, onleave = null) => {
+    const button = document.createElement('button');
+    button.setAttribute('onclick', onclick);
+    button.setAttribute('class', buttonClass);
+    button.setAttribute('ID', label.replace(/\s/g, ''));
+    button.innerHTML = label;
+    if (onenter) {
+        button.setAttribute('onmouseenter', onenter);
+        button.setAttribute('onmouseleave', onleave);
+    }
+    document.getElementById(location).appendChild(button);
+}
+
+let timeoutID
+const showDeleteCandidates = () => {
+    if (ruleSelections[0]) {
+        addRed('.ruleLine');
+    } else {
+        addRed('.finalLine');
+    }
+}
+
+const unshowDeleteCandidates = () => {
+    if (ruleSelections[0]) {
+        removeRed('.ruleLine');
+    } else {
+        removeRed('.finalLine');
+    }
+}
+
+const showDeleteCandidatesRules = () => {
+    if (ruleSelections[0]) {
+        addRed('.ruleLine');
+    } else if (activeElement) {
+        addRed('.finalLine');
+    }
+}
+
+const unshowDeleteCandidatesRules = () => {
+    if (ruleSelections[0]) {
+        removeRed('.ruleLine');
+    } else if (activeElement) {
+        removeRed('.finalLine');
+    }
+}
+
+const showDeleteCandidatesAll = () => {
+    addRed('.tableRow');
+}
+
+const unshowDeleteCandidatesAll = () => {
+    removeRed('.tableRow');
+}
+
+const addRed = (domClass) => {
+    timeoutID = setTimeout(() => {
+        $(domClass).css('background', 'var(--delete-color)');
+        $(domClass).css('color', 'var(--delete-text-color)');
+    }, 100);
+}
+
+const removeRed = (domClass) => {
+    clearTimeout(timeoutID);
+    $(domClass).css('background', '');
+    $(domClass).css('color', '');
+}
+
+const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
+    for (const [key, value] of Object.entries(classesWithBoolean)) {
+        $(`.${key}`).attr('disabled', !value);
+    }
+    for (const [key, value] of Object.entries(IDsWithBoolean)) {
+        $(`#${key}`).attr('disabled', !value);
+    }
+}
+
 //Initialisation
 let proof = [null];
 let activeElement;
@@ -996,20 +1061,20 @@ let symbols = {
     contradiction: '⊥'
 };
 resetRuleVariablesAndSelections();
-createButton(`addPremiseOrAssumption('Premise')`, 'Add premise', 'premiseOrAssumption', 'add');
-createButton(`addPremiseOrAssumption('Assumption')`, 'Add assumption', 'premiseOrAssumption', 'add');
+createButton(`addPremiseOrAssumption('Premise')`, 'Add premise', 'premiseOrAssumption', 'add', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
+createButton(`addPremiseOrAssumption('Assumption')`, 'Add assumption', 'premiseOrAssumption', 'add', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
 Object.keys(symbols).forEach(connective => {
     if (connective !== 'contradiction') {
-        createButton(`ruleSelection('${symbols[connective]}E')`, `${symbols[connective]}E`, 'inference', 'elim');
+        createButton(`ruleSelection('${symbols[connective]}E')`, `${symbols[connective]}E`, 'inference', 'elim', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
     }
 })
-createButton(`ruleSelection('DN')`, `DN`, 'inference', 'elim');
+createButton(`ruleSelection('DN')`, `DN`, 'inference', 'elim', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
 Object.keys(symbols).forEach(connective => {
     if (connective !== 'contradiction') {
-        createButton(`ruleSelection('${symbols[connective]}I')`, `${symbols[connective]}I`, 'inference', 'intro');
+        createButton(`ruleSelection('${symbols[connective]}I')`, `${symbols[connective]}I`, 'inference', 'intro', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
     }
 })
-createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference', 'intro');
+createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference', 'intro', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
 Object.keys(symbols).forEach(connective => {
     if (connective !== 'contradiction') {
         createButton(`insert("${connective}","")`, symbols[connective], 'symbolInput', 'con')
@@ -1020,12 +1085,11 @@ Object.keys(symbols).forEach(connective => {
 ['A', 'B', 'C', 'D', 'E', 'F'].forEach(letter => {
     createButton(`insert("atomic","${letter}")`, letter, 'symbolInput', 'letter')
 });
-createButton('cancel()', 'Cancel line', 'cancel', 'delete');
+createButton('cancel(true)', 'Clear latest', 'cancel', 'delete', 'showDeleteCandidates()', 'unshowDeleteCandidates()');
 const doesNotWork = () => {/////////////
     alert("Sorry, this button does not work yet!");
 }
-createButton('doesNotWork()', 'Delete line', 'inference', 'delete');////////////
-createButton('reset()', 'Clear all', 'reset', 'delete');
+createButton('reset()', 'Clear all', 'reset', 'delete', 'showDeleteCandidatesAll()', 'unshowDeleteCandidatesAll()');
 createButton('doesNotWork()', 'Finish proof', 'inference', 'finish');///////////
 buttonsActive({
     premiseOrAssumption: false,
