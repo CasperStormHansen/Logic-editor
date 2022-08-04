@@ -54,7 +54,7 @@ body {
   padding: 10px;
 }
 
-@media only screen and (max-width: 1085px) {
+@media only screen and (max-width: 1087px) {
   body {
     display: flex;
     flex-direction: column;
@@ -75,9 +75,17 @@ body {
   #buttons {
     float: left;
   }
+
+  button {
+    padding: 3px;
+  }
+
+  .end-of-group {
+    margin-bottom: 8px;
+  }
 }
 
-@media only screen and (min-width: 1085px) {
+@media only screen and (min-width: 1087px) {
 
   body {
     width: 1086.5px;
@@ -100,6 +108,14 @@ body {
 
   #buttons {
     padding-top: 0px !important;
+  }
+
+  button {
+    padding: 8px;
+  }
+
+  .end-of-group {
+    margin-bottom: 12px;
   }
 }
 
@@ -216,10 +232,9 @@ button {
   border: 1px solid var(--button-active-color);
   background-color: var(--button-active-color);
   color: var(--button-active-text-color);
-  width: 53px;
+  width: 64.4px;
   text-align: center;
   border-radius: 7px;
-  padding: 3px;
   margin: 2px;
 }
 
@@ -247,10 +262,6 @@ button[disabled] {
 
 #finish>button {
   width: 167px;
-}
-
-.end-of-group {
-  margin-bottom: 8px;
 }
 
 

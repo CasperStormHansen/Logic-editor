@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.3**
+**Version 0.5**
 
 **Author: Casper Storm Hansen**
 
@@ -74,7 +74,7 @@ Preparation for this effect has been made by `renderRule` having  split its html
 
 Also, while the animation takes place, all but the "reset" button are deactivated, as the code is not able to handle input correctly at that point. Afterwards, some of the buttons are made active again, and `resetRuleVariablesAndSelections` is called. 
 
-Two special cases must be mentioned, namely disjunction-introduction and EFQ that need the user to enter a (sub-)formula. The function `ruleVariableUpdate` therefore calls the above-mentioned `makeActive` function in those cases and `insert` calls `ruleVariableUpdate` with the special argument values `'callFromInsertUnfinished'` and `'callFromInsertFinished'`. While being inputted, the (sub-)formula is stored in `enteredDisjunct`. 
+A special case must be mentioned, namely disjunction-introduction, which needs the user to enter a sub-formula. The function `ruleVariableUpdate` therefore calls the above-mentioned `makeActive` function in that case and `insert` calls `ruleVariableUpdate` with the special argument values `'callFromInsertUnfinished'` and `'callFromInsertFinished'`. While being inputted, the sub-formula is stored in `enteredDisjunct`. 
 
 ## 4 Initialization and reset
 
@@ -94,13 +94,11 @@ v0.3: Visual design improved
 
 v0.4: Option to delete last line added; visual warnings added for all buttons that delete something; buttons reorganised according to whether they trigger high-level or low-level actions
 
+v0.5: Changes to the inference rules; minor tweak to button design
+
 ## 6 Planned updates
 
 The app will be update with the following:
-- user-friendliness, specifically
-    - more support for the user being able to change his/her mind without having to start over
-    - mouseover on a button will in some cases show the result of the button being clicked
-- premises will always appear before other lines
 - extension to predicate logic
 - upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
 - a settings menu where symbols can be changed and the contextual help can be turned off
