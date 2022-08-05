@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="logiceditor.js" defer></script>
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 
 <body>
@@ -285,6 +288,56 @@
 
       </div>
     </div>
+  </div>
+
+  <div id="dialog" title="Settings">
+    <form id="symbolSelection">
+      <fieldset>
+        <legend>Negation symbol</legend>
+        <label><input type="radio" name="negation" value="¬" checked="checked" />¬</label>
+        <label><input type="radio" name="negation" value="~" />~</label>
+        <label><input type="radio" name="negation" value="−" />−</label>
+        <label><input type="radio" name="negation" value="!" />!</label>
+      </fieldset>
+      <fieldset>
+        <legend>Conjunction symbol</legend>
+        <label><input type="radio" name="conjunction" value="&" checked="checked" />&</label>
+        <label><input type="radio" name="conjunction" value="∧" />∧</label>
+        <label><input type="radio" name="conjunction" value="·" />·</label>
+      </fieldset>
+      <fieldset>
+        <legend>Disjunction symbol</legend>
+        <label><input type="radio" name="disjunction" value="∨" checked="checked" />∨</label>
+        <label><input type="radio" name="disjunction" value="+" />+</label>
+        <label><input type="radio" name="disjunction" value="∥" />∥</label>
+      </fieldset>
+      <fieldset>
+        <legend>Conditional symbol</legend>
+        <label><input type="radio" name="conditional" value="→" checked="checked" />→</label>
+        <label><input type="radio" name="conditional" value="⇒" />⇒</label>
+        <label><input type="radio" name="conditional" value="⊃" />⊃</label>
+      </fieldset>
+      <fieldset>
+        <legend>Biconditional symbol</legend>
+        <label><input type="radio" name="biconditional" value="↔" checked="checked" />↔</label>
+        <label><input type="radio" name="biconditional" value="⇔" />⇔</label>
+        <label><input type="radio" name="biconditional" value="≡" />≡</label>
+      </fieldset>
+      <fieldset>
+        <legend>Contradiction symbol</legend>
+        <label><input type="radio" name="contradiction" value="⊥" checked="checked" />⊥</label>
+        <label><input type="radio" name="contradiction" value="0" />0</label>
+        <label><input type="radio" name="contradiction" value="↯" />↯</label>
+      </fieldset>
+      <fieldset>
+        <legend>Propositional letters</legend>
+        <input type="text" id="propositionalLetters" value="ABCD" />
+      </fieldset>
+      <p id="author-info">The Logic Editor is created by <a href="http://www.casperstormhansen.com/">Casper Storm
+          Hansen</a>. Please <a href="mailto: casper_storm_hansen@hotmail.com">send me</a> bug reports and other
+        feedback. I would be happy to
+        consider any feature request.</p>
+    </form>
   </div>
 </body>
 

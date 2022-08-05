@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.5**
+**Version 0.6**
 
 **Author: Casper Storm Hansen**
 
@@ -8,7 +8,7 @@ The Logic Editor web app lets user create natural deduction proofs as taught in,
 
 This document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective (which again presupposes basic knowledge of natural deduction proofs in formal logic).
 
-Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. The short section 4 explains initialization and resetting. Section 5 contains the version history. And a final section lists planned updates.
+Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. The short section 4 explains the remaining code, for example that concerning initialization and resetting. Section 5 contains the version history. And a final section lists planned updates.
 
 Disclaimer: I am quite ignorant of the conventions normally governing the writing of technical documentation, and have therefore probably violated many of them below. 
 
@@ -66,7 +66,7 @@ This function, which accounts for around a third of the JavaScript code, is resp
 
 By default, the values are such that when they are rendered, they show exactly what a textbook would contain. For example, `p` renders as "p". (These and other defaults are set and reset by the function `resetRuleVariablesAndSelections`.) However, when the user has made choices that determine their value, `ruleVariableUpdate` makes those updates. In those cases where the user has to make more decisions before the rule can be applied, the function then calls `renderAll`.
 
-As mentioned, `renderAll` calls `renderProof`, which has been fully explained above, and `renderRule`, which it is now time to describe. The last half of that function creates html code and sends it to the appropriate place in the DOM. It calls the function `waitingForInput`, which returns a Boolean indicating whether a given line in the rule should be highlighted to indicate that it is the next concerning which the user must make a choice. It also relies on the object stored in `rule` to supply the variable information. This object is a list of lists, which is created in the first half of `renderRule`.  It contains one list for each line in the rule, plus a `null` to ensure that this, like `proof`, is effectively one-indexed. Each inner list contains one element for each table cell to be outputted. Basically, the first half of `renderRule` tells the last half how the variables that were assigned values by `ruleVariableUpdate` should be organized for output.
+As mentioned, `renderAll` calls `renderProof`, which has been fully explained above, and `renderRule`, which it is now time to describe. The last half of that function creates html code and sends it to the appropriate place in the DOM. It calls the function `waitingForInput`, which returns a Boolean indicating whether a given line in the rule should be highlighted to indicate that it is the next concerning which the user must make a choice. It also relies on the object stored in `rule` to supply the variable information. This object is a list of lists, which is created in the first half of `renderRule`.  It contains one list for each line in the rule, plus a first element that contains the name of the rule as presented to the user. Each inner list contains one element for each table cell to be outputted. Basically, the first half of `renderRule` tells the last half how the variables that were assigned values by `ruleVariableUpdate` should be organized for output.
 
 When the user has made all the choices needed to apply a rule, `ruleVariableUpdate` does something else. It first updates relevant variables and, second, calls `renderProof` to remove highlighting of previously eligible lines. Third, it adds the new "line" to `proof`. Both here and in `renderRule`, the five functions, `negationOf`, …, `biconditionalOf`are called to create complex formulas from less complex ones. The variable `theContradiction` may also be called to supply the atomic formula consisting of just the contradiction symbol. Fourth, it calls `finishRuleApplication`, which is responsible for the visual effect consisting in most of the rendered rule fading out and the new line sliding up to join the proof. This part of the code utilizes jQuery.
 
@@ -76,13 +76,15 @@ Also, while the animation takes place, all but the "reset" button are deactivate
 
 A special case must be mentioned, namely disjunction-introduction, which needs the user to enter a sub-formula. The function `ruleVariableUpdate` therefore calls the above-mentioned `makeActive` function in that case and `insert` calls `ruleVariableUpdate` with the special argument values `'callFromInsertUnfinished'` and `'callFromInsertFinished'`. While being inputted, the sub-formula is stored in `enteredDisjunct`. 
 
-## 4 Initialization and reset
+## 4 Odds and ends
 
 The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown. In addition, at this point the dictionary `symbols` is defined. In a future update it will be possible for the user to change it, so the app uses their preferred logical symbols.
 
 When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six function named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`.  And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
 
 The highlighting effect is only activated if the mouse stays over the button in question for more than 100 milliseconds - to avoid annoying "blinking" when the user unintentionally passes over the button. It is not activated at all when the example proof is shown, since the user should not be discouraged to delete that.
+
+The `openSettings` function does what the name suggests. In the settings menu, the user can change symbols used for the connectives and the list of available propositional letters. This behavior is governed by the event listeners placed immediately after the definition of the `openSettings` function in the code.
 
 ## 5 Version history
 
@@ -96,10 +98,11 @@ v0.4: Option to delete last line added; visual warnings added for all buttons th
 
 v0.5: Changes to the inference rules; minor tweak to button design
 
+v0.6: Settings menu added
+
 ## 6 Planned updates
 
 The app will be update with the following:
 - extension to predicate logic
 - upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
-- a settings menu where symbols can be changed and the contextual help can be turned off
 - a browser logo
