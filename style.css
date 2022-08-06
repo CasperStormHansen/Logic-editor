@@ -5,20 +5,20 @@
 
   --table-color: white;
 
-  --button-active-color: black;
+  --button-active-color: #3d3d3d;
   --button-active-text-color: white;
 
-  --button-hover-color: #889E5F;
+  --button-hover-color: black;
   --button-hover-text-color: white;
 
-  --insert-color: #2CA1CD;
+  --insert-color: #7D95BF;
   --insert-text-color: white;
 
   --delete-color: #D17D96;
   --delete-text-color: black;
 
-  --sequent-color: #F7EFCD;
-  --sequent-text-color: black;
+  --sequent-color: #75805D;
+  --sequent-text-color: white;
 }
 
 
