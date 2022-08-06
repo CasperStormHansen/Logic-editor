@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.6**
+**Version 0.7**
 
 **Author: Casper Storm Hansen**
 
