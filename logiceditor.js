@@ -649,52 +649,6 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
             }
             break;
         }
-        // case `biconditionalE`: {
-        //     switch (ruleLine) {
-        //         case 1: {
-        //             j = proofLine;
-        //             a = proof[proofLine]['dependencies'];
-        //             p = proof[proofLine]['formula']['left'];
-        //             q = proof[proofLine]['formula']['right'];
-        //             k = proof.length;
-        //             renderProof();
-        //             proof.push(
-        //                 {
-        //                     formula: conjunctionOf(conditionalOf(proof[ruleSelections[1]]['formula']['left'], proof[ruleSelections[1]]['formula']['right']), conditionalOf(proof[ruleSelections[1]]['formula']['right'], proof[ruleSelections[1]]['formula']['left'])),
-        //                     dependencies: proof[ruleSelections[1]]['dependencies'],
-        //                     inference: rule[0],
-        //                     inferenceSources: [ruleSelections[1]]
-        //                 }
-        //             );
-        //             finishRuleApplication();
-        //             break;
-        //         }
-        //     }
-        //     break;
-        // }
-        // case `biconditionalI`: {
-        //     switch (ruleLine) {
-        //         case 1: {
-        //             j = proofLine;
-        //             a = proof[proofLine]['dependencies'];
-        //             p = proof[proofLine]['formula']['left']['left'];
-        //             q = proof[proofLine]['formula']['left']['right'];
-        //             k = proof.length;
-        //             renderProof();
-        //             proof.push(
-        //                 {
-        //                     formula: conditionalOf(proof[ruleSelections[1]]['formula']['left']['left'], proof[ruleSelections[1]]['formula']['left']['right']),
-        //                     dependencies: proof[ruleSelections[1]]['dependencies'],
-        //                     inference: rule[0],
-        //                     inferenceSources: [ruleSelections[1]]
-        //                 }
-        //             );
-        //             finishRuleApplication();
-        //             break;
-        //         }
-        //     }
-        //     break;
-        // }
         case 'DN': {
             switch (ruleLine) {
                 case 1: {
@@ -717,43 +671,6 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
             }
             break;
         }
-        // case 'EFQ': {
-        //     switch (ruleLine) {
-        //         case 1: {
-        //             j = proofLine;
-        //             a = proof[proofLine]['dependencies'];
-        //             p = enteredDisjunct['formula'];
-        //             buttonsActive({
-        //                 symbolInput: true
-        //             });
-        //             renderAll();
-        //             makeActive(document.getElementById('formula'), 'justThis');
-        //             help('efq-first');
-        //             break;
-        //         }
-        //         case 'callFromInsertUnfinished': {
-        //             p = enteredDisjunct['formula'];
-        //             help('efq-next');
-        //             break;
-        //         }
-        //         case 'callFromInsertFinished': {
-        //             p = enteredDisjunct['formula'];
-        //             k = proof.length;
-        //             renderProof();
-        //             proof.push(
-        //                 {
-        //                     formula: enteredDisjunct['formula'],
-        //                     dependencies: proof[ruleSelections[1]]['dependencies'],
-        //                     inference: rule[0],
-        //                     inferenceSources: [ruleSelections[1]]
-        //                 }
-        //             );
-        //             finishRuleApplication();
-        //             break;
-        //         }
-        //     }
-        //     break;
-        // }
     }
 }
 
@@ -1097,46 +1014,46 @@ const createButton = (onclick, label, buttonClass, buttonID, location, onenter =
 
 const showDeleteCandidates = () => {
     if (proofIsFinished) {
-        addRed('#sequent');
+        addRed('#sequent, .active');
     } else if (ruleSelections[0]) {
-        addRed('.ruleLine');
+        addRed('.ruleLine, .active');
     } else {
-        addRed('.finalLine');
+        addRed('.finalLine, .active');
     }
 }
 
 const unshowDeleteCandidates = () => {
     if (proofIsFinished) {
-        removeRed('#sequent');
+        removeRed('#sequent, .active');
     } else if (ruleSelections[0]) {
-        removeRed('.ruleLine');
+        removeRed('.ruleLine, .active');
     } else {
-        removeRed('.finalLine');
+        removeRed('.finalLine, .active');
     }
 }
 
 const showDeleteCandidatesRules = () => {
     if (ruleSelections[0]) {
-        addRed('.ruleLine');
+        addRed('.ruleLine, .active');
     } else if (activeElement) {
-        addRed('.finalLine');
+        addRed('.finalLine, .active');
     }
 }
 
 const unshowDeleteCandidatesRules = () => {
     if (ruleSelections[0]) {
-        removeRed('.ruleLine');
+        removeRed('.ruleLine, .active');
     } else if (activeElement) {
-        removeRed('.finalLine');
+        removeRed('.finalLine, .active');
     }
 }
 
 const showDeleteCandidatesAll = () => {
-    addRed('.tableRow, #sequent');
+    addRed('.tableRow, #sequent, .active');
 }
 
 const unshowDeleteCandidatesAll = () => {
-    removeRed('.tableRow, #sequent');
+    removeRed('.tableRow, #sequent, .active');
 }
 
 let timeoutID
@@ -1201,11 +1118,8 @@ createButton(`insert("contradiction",'')`, symbols.contradiction, 'symbolInput',
     createButton(`insert("atomic","${letter}")`, letter, 'symbolInput', letter, 'letter')
 });
 createButton('cancel(true)', 'Clear latest', 'cancel', 'cancel', 'delete', 'showDeleteCandidates()', 'unshowDeleteCandidates()');
-// const doesNotWork = () => {/////////////
-//     alert("Sorry, this button does not work yet!");
-// }
 createButton('reset()', 'Clear all', 'reset', 'reset', 'delete', 'showDeleteCandidatesAll()', 'unshowDeleteCandidatesAll()');
-createButton('finishProof()', 'Finish proof', 'finish', 'finish', 'finish');///////////
+createButton('finishProof()', 'Finish proof', 'finish', 'finish', 'finish');
 createButton('openSettings()', 'Settings', 'settings', 'settings', 'finish');
 buttonsActive({
     premiseOrAssumption: false,

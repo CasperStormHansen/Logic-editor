@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.7**
+**Version 0.8**
 
 **Author: Casper Storm Hansen**
 
@@ -103,6 +103,8 @@ v0.5: Changes to the inference rules; minor tweak to button design
 v0.6: Settings menu added
 
 v0.7: Functionality for finishing the proof is added; favicon added
+
+v0.8: Final visual design implemented
 
 ## 6 Planned updates
 
