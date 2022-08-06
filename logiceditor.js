@@ -110,7 +110,8 @@ const addPremiseOrAssumption = (premiseOrAssumption) => {
         symbolInput: true,
         cancel: true,
         reset: true,
-        settings: false
+        settings: false,
+        finish: false
     }, {
         [(premiseOrAssumption === "Premise") ? 'Addpremise' : 'Addassumption']: false
     })
@@ -179,7 +180,8 @@ const insert = (type, symbol = '') => {
                             premiseOrAssumption: true,
                             symbolInput: false,
                             inference: true,
-                            settings: true
+                            settings: true,
+                            finish: finishReady()
                         });
                         help('noactiveinput-existinglines');
                     } else {
@@ -235,7 +237,8 @@ const ruleSelection = (rule) => {
         premiseOrAssumption: true,
         symbolInput: false,
         inference: true,
-        settings: false
+        settings: false,
+        finish: false
     }, {
         [rule]: false
     });
@@ -941,7 +944,8 @@ const finishRuleApplication = () => {
                 inference: true,
                 cancel: true,
                 reset: true,
-                settings: true
+                settings: true,
+                finish: finishReady()
             });
             help('noactiveinput-existinglines');
         })
@@ -954,6 +958,49 @@ const disjunctionOf = (left, right) => { return { type: 'disjunction', left: lef
 const conditionalOf = (left, right) => { return { type: 'conditional', left: left, right: right } }
 const biconditionalOf = (left, right) => { return { type: 'biconditional', left: left, right: right } }
 const theContradiction = { type: 'contradiction' };
+
+const finishReady = () => {
+    if (proof.length === 1) {
+        return false;
+    } else {
+        for (var dependency of proof[proof.length - 1]['dependencies']) {
+            if (proof[dependency]['inference'] !== 'Premise') {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+const finishProof = () => {
+    buttonsActive({
+        symbolInput: false,
+        premiseOrAssumption: false,
+        inference: false,
+        reset: true,
+        cancel: true,
+        settings: true,
+        finish: false
+    });
+    var conclusion = proof[proof.length - 1]['formula'];
+    var premises = [];
+    var html = '<div id="sequent">';
+    var commaBefore = false;
+    for (i = 1; i < proof.length; i++) {
+        if (proof[i]['inference'] === 'Premise') {
+            premises.push(proof[i]['formula']);
+            if (commaBefore) {
+                html += ', ';
+            }
+            html += string(proof[i]['formula']);
+            commaBefore = true;
+        }
+    }
+    html += ' ⊢ ' + string(conclusion) + '</div>';
+    $("#sequent-wrapper").html(html);
+    proofIsFinished = true;
+    help('finished');
+}
 
 let a, b, c, g, h, i, j, k, m, p, q, r, enteredDisjunct, ruleSelections, rule;
 const resetRuleVariablesAndSelections = () => {
@@ -972,20 +1019,23 @@ const resetRuleVariablesAndSelections = () => {
 const cancel = (fromCancelButton = false) => {
     if (activeFormula && ruleSelections[0] === null) {
         proof.splice(activeFormula.split(".")[0], 1);
-    } else if (fromCancelButton && ruleSelections[0] === null) {
+    } else if (fromCancelButton && ruleSelections[0] === null && !proofIsFinished) {
         proof.pop();
     }
     activeElement = null;
     activeFormula = null;
     resetRuleVariablesAndSelections();
     renderAll();
+    $("#sequent-wrapper").html('');
+    proofIsFinished = false;
     buttonsActive({
         symbolInput: false,
         premiseOrAssumption: true,
         inference: proof.length > 1,
         reset: proof.length > 1,
         cancel: proof.length > 1,
-        settings: true
+        settings: true,
+        finish: finishReady()
     });
     help((proof.length === 1) ? 'noactiveinput-nolines' : 'noactiveinput-existinglines');
     if (fromCancelButton) {
@@ -997,8 +1047,11 @@ const reset = () => {
     proof = [null];
     activeElement = null;
     activeFormula = null;
+    justLoaded = false;
     resetRuleVariablesAndSelections();
     renderAll();
+    $("#sequent-wrapper").html('');
+    proofIsFinished = false;
     $("#vanishing").show();
     $("#vanishing").css('visibility', 'visible');
     buttonsActive({
@@ -1007,7 +1060,8 @@ const reset = () => {
         inference: false,
         reset: false,
         cancel: false,
-        settings: true
+        settings: true,
+        finish: false
     });
     help('noactiveinput-nolines');
 }
@@ -1016,6 +1070,15 @@ const help = (id = '') => {
     $("#help").children().css("display", "none");
     if (id) {
         $(`#${id}`).css("display", "block");
+    }
+    if (id === 'noactiveinput-existinglines') {
+        if (finishReady()) {
+            $("#finish-ready").css("display", "block");
+            $("#not-finish-ready").css("display", "none");
+        } else {
+            $("#finish-ready").css("display", "none");
+            $("#not-finish-ready").css("display", "block");
+        }
     }
 }
 
@@ -1032,9 +1095,10 @@ const createButton = (onclick, label, buttonClass, buttonID, location, onenter =
     document.getElementById(location).appendChild(button);
 }
 
-let timeoutID
 const showDeleteCandidates = () => {
-    if (ruleSelections[0]) {
+    if (proofIsFinished) {
+        addRed('#sequent');
+    } else if (ruleSelections[0]) {
         addRed('.ruleLine');
     } else {
         addRed('.finalLine');
@@ -1042,7 +1106,9 @@ const showDeleteCandidates = () => {
 }
 
 const unshowDeleteCandidates = () => {
-    if (ruleSelections[0]) {
+    if (proofIsFinished) {
+        removeRed('#sequent');
+    } else if (ruleSelections[0]) {
         removeRed('.ruleLine');
     } else {
         removeRed('.finalLine');
@@ -1066,24 +1132,27 @@ const unshowDeleteCandidatesRules = () => {
 }
 
 const showDeleteCandidatesAll = () => {
-    addRed('.tableRow');
+    addRed('.tableRow, #sequent');
 }
 
 const unshowDeleteCandidatesAll = () => {
-    removeRed('.tableRow');
+    removeRed('.tableRow, #sequent');
 }
 
-const addRed = (domClass) => {
-    timeoutID = setTimeout(() => {
-        $(domClass).css('background', 'var(--delete-color)');
-        $(domClass).css('color', 'var(--delete-text-color)');
-    }, 100);
+let timeoutID
+const addRed = (domClassOrID) => {
+    if (!justLoaded) {
+        timeoutID = setTimeout(() => {
+            $(domClassOrID).css('background', 'var(--delete-color)');
+            $(domClassOrID).css('color', 'var(--delete-text-color)');
+        }, 100);
+    }
 }
 
-const removeRed = (domClass) => {
+const removeRed = (domClassOrID) => {
     clearTimeout(timeoutID);
-    $(domClass).css('background', '');
-    $(domClass).css('color', '');
+    $(domClassOrID).css('background', '');
+    $(domClassOrID).css('color', '');
 }
 
 const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
@@ -1098,6 +1167,8 @@ const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
 
 
 //Initialisation
+let justLoaded = true;
+let proofIsFinished = true;
 let proof = [null];
 let activeElement;
 let activeFormula;
@@ -1130,11 +1201,11 @@ createButton(`insert("contradiction",'')`, symbols.contradiction, 'symbolInput',
     createButton(`insert("atomic","${letter}")`, letter, 'symbolInput', letter, 'letter')
 });
 createButton('cancel(true)', 'Clear latest', 'cancel', 'cancel', 'delete', 'showDeleteCandidates()', 'unshowDeleteCandidates()');
-const doesNotWork = () => {/////////////
-    alert("Sorry, this button does not work yet!");
-}
+// const doesNotWork = () => {/////////////
+//     alert("Sorry, this button does not work yet!");
+// }
 createButton('reset()', 'Clear all', 'reset', 'reset', 'delete', 'showDeleteCandidatesAll()', 'unshowDeleteCandidatesAll()');
-createButton('doesNotWork()', 'Finish proof', 'inference', 'finish', 'finish');///////////
+createButton('finishProof()', 'Finish proof', 'finish', 'finish', 'finish');///////////
 createButton('openSettings()', 'Settings', 'settings', 'settings', 'finish');
 buttonsActive({
     premiseOrAssumption: false,
@@ -1142,7 +1213,8 @@ buttonsActive({
     inference: false,
     reset: true,
     cancel: false,
-    settings: false
+    settings: false,
+    finish: false
 });
 
 
@@ -1170,6 +1242,9 @@ $('#symbolSelection input').on('change', () => {
     $(`#biconditional`).html(symbols['biconditional']);
     $(`#contradiction`).html(symbols['contradiction']);
     renderAll();
+    if (proofIsFinished) {
+        finishProof();
+    }
 });
 
 $("#propositionalLetters").keyup(function () {

@@ -40,7 +40,7 @@ Third, it calls the function `makeActive`; fourth, it changes which buttons are 
 
 Such input is handled by the `insert` function. It first identifies the object in the `proof` tree that should be modified and lets `obj` refer to the object *one step above* it. It does so by relying on the `id`, which has a structure that reflects the path down in the tree to the desired object. For example, the `id` might be "3.formula.left.left.right". The variable `array` is initially set equal to the list that results from splitting this string at ".", and then these elements are removed, starting from the beginning, as the `obj` is progressively redefined to objects deeper and deeper in the tree. This happens in the first few lines of `insert`'s code. When the `switch` is reached, the array has one element left, so in the example it would be equal to `['right']`. In each of the three `case`s under the `switch`, `obj['right']` would then be set equal to the desired sub-formula. This ensures that `proof` is modified, and not just `obj`.
 
-The `insert` function is also called in the process of applying two of the inference rules. This is tested by the condition `ruleSelections[0] === null` as several points in `insert`. In this section, I am only describing what happens when that is true.
+The `insert` function is also called in the process of applying one of the inference rules. This is tested by the condition `ruleSelections[0] === null` as several points in `insert`. In this section, I am only describing what happens when that is true.
 
 In that case, `renderProof` is called. Then, the rest of the code is concerned with passing the "active" status to a suitable new sub-formula. When a connective is inserted, this is simple: such status is passed to (one of) the new empty sub-formulas that are created. When a propositional letter is inserted instead, it is more complicated. First, `listOfEmpty` is defined as a list that contains all remaining empty sub-formulas's DOM elements plus that of one more (making the variable name slightly misleading): the sub-formula that was just filled out. This is included so the code can subsequently search for the list for the first element that comes after this one (with the first element of the list being considered to come after the last one), and make that one active. If no empty sub-formulas remain, the process of adding a new premise or assumption has been completed, and various variables and buttons are updated to reflect this.
 
@@ -58,7 +58,7 @@ There is one special case here. If the rule in question is conjunction-eliminati
 
 The modification of `ruleSelections` (in this and the other cases) is done by the function `lineSelection`. When it has done that (and perhaps changed which buttons are active), it calls `ruleVariableUpdate`. 
 
-This function, which accounts for around a third of the JavaScript code, is responsible for changing the values of several variables that correspond to the variables in a textbook statement of the inference rules. They are as follows:
+This function, which accounts for a significant part of the JavaScript code, is responsible for changing the values of several variables that correspond to the variables in a textbook statement of the inference rules. They are as follows:
 
 - `p`, `q`, `r`: variables of formulas
 - `g`, `h`, `i`, `j`, `k`, `m`: variables for line numbers
@@ -70,19 +70,21 @@ As mentioned, `renderAll` calls `renderProof`, which has been fully explained ab
 
 When the user has made all the choices needed to apply a rule, `ruleVariableUpdate` does something else. It first updates relevant variables and, second, calls `renderProof` to remove highlighting of previously eligible lines. Third, it adds the new "line" to `proof`. Both here and in `renderRule`, the five functions, `negationOf`, …, `biconditionalOf`are called to create complex formulas from less complex ones. The variable `theContradiction` may also be called to supply the atomic formula consisting of just the contradiction symbol. Fourth, it calls `finishRuleApplication`, which is responsible for the visual effect consisting in most of the rendered rule fading out and the new line sliding up to join the proof. This part of the code utilizes jQuery.
 
-Preparation for this effect has been made by `renderRule` having  split its html in two and ship it to different `<div>`s. The first vanish, while the second contains the new line and stays visible. Thus, immediately after the conclusion of the visual effect, the html table contains a first `<div>` with all but one line of the proof, a collapsed second  `<div>`, and a third  `<div>` containing the new line of the proof. Then, invisibly to the user, the full proof is placed in the first one, while the second and third one are emptied of content, and the second one is made "visible" again, so that the two latter  `<div>`s are ready for the application of a new rule.
+Preparation for this effect has been made by `renderRule` having split its html in two and ship it to different `<div>`s. The first vanish, while the second contains the new line and stays visible. Thus, immediately after the conclusion of the visual effect, the html table contains a first `<div>` with all but one line of the proof, a collapsed second  `<div>`, and a third  `<div>` containing the new line of the proof. Then, invisibly to the user, the full proof is placed in the first one, while the second and third one are emptied of content, and the second one is made "visible" again, so that the two latter  `<div>`s are ready for the application of a new rule.
 
 Also, while the animation takes place, all but the "reset" button are deactivated, as the code is not able to handle input correctly at that point. Afterwards, some of the buttons are made active again, and `resetRuleVariablesAndSelections` is called. 
 
-A special case must be mentioned, namely disjunction-introduction, which needs the user to enter a sub-formula. The function `ruleVariableUpdate` therefore calls the above-mentioned `makeActive` function in that case and `insert` calls `ruleVariableUpdate` with the special argument values `'callFromInsertUnfinished'` and `'callFromInsertFinished'`. While being inputted, the sub-formula is stored in `enteredDisjunct`. 
+A special case must be mentioned, namely disjunction-introduction, which needs the user to enter a sub-formula. The function `ruleVariableUpdate` therefore calls the above-mentioned `makeActive` function in that case and `insert` calls `ruleVariableUpdate` with the special argument values `callFromInsertUnfinished` and `callFromInsertFinished`. While being inputted, the sub-formula is stored in `enteredDisjunct`. 
 
 ## 4 Odds and ends
 
-The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown. In addition, at this point the dictionary `symbols` is defined. In a future update it will be possible for the user to change it, so the app uses their preferred logical symbols.
+When the user is finished, a button can be clicked to show the proved sequent. This is accomplished by the function `finishProof`. The function `finishReady` checks whether the proof can be finished, i.e., whether the proofs final line depends on only premises. This function is called by various other functions to determine whether the button should be active and whether the help info should mention the option of using it.
 
-When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six function named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`.  And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
+The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown. In addition, at this point the dictionary `symbols` is defined.
 
-The highlighting effect is only activated if the mouse stays over the button in question for more than 100 milliseconds - to avoid annoying "blinking" when the user unintentionally passes over the button. It is not activated at all when the example proof is shown, since the user should not be discouraged to delete that.
+When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six functions named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`.  And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
+
+The highlighting effect is only activated if the mouse stays over the button in question for more than 100 milliseconds - to avoid annoying "blinking" when the user unintentionally passes over the button. It is not activated at all when the example proof is shown, since the user should not be discouraged to delete that. This is avoided because `addRed` checks the value of the variable `justLoaded`, which is initially true, and changed to false on the first call to `reset`.
 
 The `openSettings` function does what the name suggests. In the settings menu, the user can change symbols used for the connectives and the list of available propositional letters. This behavior is governed by the event listeners placed immediately after the definition of the `openSettings` function in the code.
 
@@ -100,9 +102,10 @@ v0.5: Changes to the inference rules; minor tweak to button design
 
 v0.6: Settings menu added
 
+v0.7: Functionality for finishing the proof is added; favicon added
+
 ## 6 Planned updates
 
 The app will be update with the following:
 - extension to predicate logic
-- upon completion of a proof, the conclusion will be shown in turnstile form, and a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)
-- a browser logo
+- upon completion of a proof, a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)

@@ -16,6 +16,9 @@
 
   --delete-color: #D17D96;
   --delete-text-color: black;
+
+  --sequent-color: #F7EFCD;
+  --sequent-text-color: black;
 }
 
 
@@ -78,6 +81,7 @@ body {
 
   button {
     padding: 3px;
+    height: 29px;
   }
 
   .end-of-group {
@@ -112,6 +116,7 @@ body {
 
   button {
     padding: 8px;
+    height: 39px;
   }
 
   .end-of-group {
@@ -220,6 +225,28 @@ body {
 .selectable:hover {
   background: var(--insert-color);
   color: var(--insert-text-color);
+}
+
+
+
+
+/* SEQUENT */
+
+#sequent {
+  text-align: center;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  padding: 10px;
+  font-size: 18px;
+  margin-top: 10px;
+  border: 1px solid var(--background-color);
+}
+
+#sequent-wrapper {
+  margin-left: 10px;
+  width: 700px;
+  background: var(--sequent-color);
+  color: var(--sequent-text-color);
 }
 
 
