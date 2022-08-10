@@ -595,6 +595,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                     k = proofLine;
                     a = proof[proofLine]['dependencies'];
                     m = proof.length;
+                    q = proof[proofLine]['formula']
                     renderProof();
                     proof.push(
                         {
