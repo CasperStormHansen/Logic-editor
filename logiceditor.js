@@ -1084,6 +1084,7 @@ const buttonsActive = (classesWithBoolean, IDsWithBoolean = []) => {
 
 
 
+
 //Initialisation
 let justLoaded = true;
 let proofIsFinished = true;
