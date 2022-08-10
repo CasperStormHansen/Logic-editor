@@ -636,7 +636,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                     } else {
                         proof.push(
                             {
-                                formula: conditionalOf(proof[ruleSelections[1]]['formula']['left']['left'], proof[ruleSelections[1]]['formula']['left']['right']),
+                                formula: biconditionalOf(proof[ruleSelections[1]]['formula']['left']['left'], proof[ruleSelections[1]]['formula']['left']['right']),
                                 dependencies: proof[ruleSelections[1]]['dependencies'],
                                 inference: rule[0],
                                 inferenceSources: [ruleSelections[1]]
@@ -735,7 +735,7 @@ const renderRule = () => {
                 k,
                 (ruleSelections[2] === null) ?
                     (ruleSelections[1] === null) ?
-                        `${string(disjunctionOf(p, q))}&emsp;or&emsp;${string(conjunctionOf(q, p))}`
+                        `${string(disjunctionOf(p, q))}&emsp;or&emsp;${string(disjunctionOf(q, p))}`
                         :
                         `<span class="selectable" onclick="lineSelection('leftDisjunct')">${string(disjunctionOf(p, q))}</span>&emsp;or&emsp;<span class="selectable" onclick="lineSelection('rightDisjunct')">${string(disjunctionOf(q, p))}</span>`
                     :
