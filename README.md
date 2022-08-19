@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.8**
+**Version 0.9**
 
 **Author: Casper Storm Hansen**
 
@@ -8,9 +8,7 @@ The Logic Editor web app lets user create natural deduction proofs as taught in,
 
 This document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective (which again presupposes basic knowledge of natural deduction proofs in formal logic).
 
-Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. The short section 4 explains the remaining code, for example that concerning initialization and resetting. Section 5 contains the version history. And a final section lists planned updates.
-
-Disclaimer: I am quite ignorant of the conventions normally governing the writing of technical documentation, and have therefore probably violated many of them below. 
+Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. Section 4 explains the remaining code, for example that concerning initialization and resetting. Section 5 concerns the backend and the part of the frontend that connects to it. Section 6 contains the version history. And a final section lists planned updates.
 
 ## 1 Proofs
 
@@ -88,7 +86,13 @@ The highlighting effect is only activated if the mouse stays over the button in 
 
 The `openSettings` function does what the name suggests. In the settings menu, the user can change symbols used for the connectives and the list of available propositional letters. This behavior is governed by the event listeners placed immediately after the definition of the `openSettings` function in the code.
 
-## 5 Version history
+## 5 Backend
+
+When the proof is finished, the function `contactServer` is called, which sends the `proof` to the backend. The backend, which is written in Python, searches a database to find out if the sequent in question has been previously proved in the app. Or, to be more precise, it checks if the sequent *or an essentially identical sequent* has. Two sequents are considered to be essentially identical if one can be be the result of permutating the premises and/or renaming the propositional letters or the other. The search is conducted by first picking a canonical representative of the equivalence class induced by the mentioned equivalence relation that the sequent belongs to, and then searching for *that* in the database. This, again, is done by creating a list of all permutations of the premises, and for each corresponding sequent replacing the propositional letters with numbers according to the order in which they first appear.
+
+If the sequent is not already in the database, the sequent and the user's proof are added to it and a message is passed back to the frontend and shown in the contextual help window. This is handled by `sendDataCallback`. If the sequent already *is* in the database, both a message and the saved proof is sent. The message gives the user the option to see that proof in order to compare it to their own. The function `renderOldProof` does that. In this case, the message informs th user whether their proof was longer than, the same length as, or shorter than the previously shortest proof. If it was shorter, the old proof in the database is replaced by the user's. 
+
+## 6 Version history
 
 v0.1: Initial version
 
@@ -106,8 +110,10 @@ v0.7: Functionality for finishing the proof is added; favicon added
 
 v0.8: Final visual design implemented
 
-## 6 Planned updates
+v0.9: Backend added
 
-The app will be update with the following:
+## 7 Planned updates
+
+The app will be updated with the following:
+- the backend will be connected to a stable database
 - extension to predicate logic
-- upon completion of a proof, a backend to the app will inform the user whether other users have proved the same sequent and how (in order to avoid that the app becomes a toll for homework cheating, this information will not be made accessible to the user before s/he has managed to prove it him- or herself)

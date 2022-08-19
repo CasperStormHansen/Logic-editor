@@ -19,6 +19,8 @@
 
   --sequent-color: #75805D;
   --sequent-text-color: white;
+
+  --link-color: #0000EE;
 }
 
 
@@ -261,6 +263,14 @@ body {
 
 
 
+/* OLD PROOF */
+#old-proof {
+  margin-top: 10px;
+}
+
+
+
+
 /* BUTTONS */
 
 button {
@@ -315,6 +325,12 @@ p {
 
 .deemphasise {
   font-size: 12px;
+}
+
+.render-old-proof {
+  color: var(--link-color);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 

@@ -916,8 +916,12 @@ const finishProof = () => {
     }
     html += ' ⊢ ' + string(conclusion) + '</div>';
     $("#sequent-wrapper").html(html);
+    if (!proofIsFinished) {
+        $('#response-from-backend').html('Connecting to database to compare your proof with those previously created by users ...');
+        help('finished');
+        contactServer();
+    }
     proofIsFinished = true;
-    help('finished');
 }
 
 let a, b, c, g, h, i, j, k, m, p, q, r, enteredDisjunct, ruleSelections, rule;
@@ -935,6 +939,10 @@ const resetRuleVariablesAndSelections = () => {
 }
 
 const cancel = (fromCancelButton = false) => {
+    if ($("#old-proof").html()) {
+        $("#old-proof").html("");
+        return
+    }
     if (activeFormula && ruleSelections[0] === null) {
         proof.splice(activeFormula.split(".")[0], 1);
     } else if (fromCancelButton && ruleSelections[0] === null && !proofIsFinished) {
@@ -969,6 +977,7 @@ const reset = () => {
     resetRuleVariablesAndSelections();
     renderAll();
     $("#sequent-wrapper").html('');
+    $("#old-proof").html('')
     proofIsFinished = false;
     $("#vanishing").show();
     $("#vanishing").css('visibility', 'visible');
@@ -1014,7 +1023,9 @@ const createButton = (onclick, label, buttonClass, buttonID, location, onenter =
 }
 
 const showDeleteCandidates = () => {
-    if (proofIsFinished) {
+    if ($("#old-proof").html()) {
+        addRed('.oldProofLine')
+    } else if (proofIsFinished) {
         addRed('#sequent, .active');
     } else if (ruleSelections[0]) {
         addRed('.ruleLine, .active');
@@ -1024,7 +1035,9 @@ const showDeleteCandidates = () => {
 }
 
 const unshowDeleteCandidates = () => {
-    if (proofIsFinished) {
+    if ($("#old-proof").html()) {
+        removeRed('.oldProofLine')
+    } else if (proofIsFinished) {
         removeRed('#sequent, .active');
     } else if (ruleSelections[0]) {
         removeRed('.ruleLine, .active');
@@ -1159,7 +1172,10 @@ $('#symbolSelection input').on('change', () => {
     $(`#contradiction`).html(symbols['contradiction']);
     renderAll();
     if (proofIsFinished) {
-        finishProof();
+        finishProof();///////
+    }
+    if ($("#old-proof").html()) {
+        renderOldProof();
     }
 });
 
@@ -1172,3 +1188,48 @@ $("#propositionalLetters").keyup(function () {
     });
     buttonsActive({ symbolInput: false });
 });
+
+
+
+
+//Connection to backend
+const contactServer = () => {
+    dataToSend = proof;
+    console.log("Sending data: " + dataToSend);//
+    xhr = getXmlHttpRequestObject();
+    xhr.onreadystatechange = sendDataCallback;
+    xhr.open("POST", "http://localhost:6969/database", true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify({ "data": dataToSend }));
+}
+
+const sendDataCallback = () => {
+    if (xhr.readyState == 4 && xhr.status == 201) {
+        console.log("Data received: " + xhr.responseText);
+        data = JSON.parse(xhr.response);
+        msg = data.msg;
+        oldProof = data.old_proof;
+        $('#response-from-backend').html(msg);
+    }
+}
+
+var xhr = null;
+getXmlHttpRequestObject = function () {
+    if (!xhr) {
+        xhr = new XMLHttpRequest();
+    }
+    return xhr;
+};
+
+const renderOldProof = () => {
+    let rows = '';
+    for (let i = 1; i < oldProof.length; i++) {
+        rows += `<div class="tableRow oldProofLine">
+                <div class="tableCell">${String(oldProof[i]['dependencies'])}</div>
+                <div class="tableCell">(${i})</div>
+                <div class="tableCell">${string(oldProof[i]['formula'])}</div>
+                <div class="tableCell">${oldProof[i]['inferenceSources']} ${oldProof[i]['inference']}</div>
+            </div>`;
+    }
+    $("#old-proof").html(rows);
+}
