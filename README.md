@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.9**
+**Version 0.10**
 
 **Author: Casper Storm Hansen**
 
@@ -88,9 +88,9 @@ The `openSettings` function does what the name suggests. In the settings menu, t
 
 ## 5 Backend
 
-When the proof is finished, the function `contactServer` is called, which sends the `proof` to the backend. The backend, which is written in Python, searches a database to find out if the sequent in question has been previously proved in the app. Or, to be more precise, it checks if the sequent *or an essentially identical sequent* has. Two sequents are considered to be essentially identical if one can be be the result of permutating the premises and/or renaming the propositional letters or the other. The search is conducted by first picking a canonical representative of the equivalence class induced by the mentioned equivalence relation that the sequent belongs to, and then searching for *that* in the database. This, again, is done by creating a list of all permutations of the premises, and for each corresponding sequent replacing the propositional letters with numbers according to the order in which they first appear.
+When the proof is finished, the function `contactServer` is called, which sends the `proof` to the backend. The backend, which is written in Python, searches an SQL database to find out if the sequent in question has been previously proved in the app. Or, to be more precise, it checks if the sequent *or an essentially identical sequent* has. Two sequents are considered to be essentially identical if one is the result of permutating the premises and/or renaming the propositional letters or the other. The search is conducted by first picking a canonical representative of the equivalence class induced by the mentioned equivalence relation that the sequent belongs to, and then searching for *that* in the database. This, again, is done by creating a list of all permutations of the premises, and for each corresponding sequent replacing the propositional letters with numbers according to the order in which they first appear.
 
-If the sequent is not already in the database, the sequent and the user's proof are added to it and a message is passed back to the frontend and shown in the contextual help window. This is handled by `sendDataCallback`. If the sequent already *is* in the database, both a message and the saved proof is sent. The message gives the user the option to see that proof in order to compare it to their own. The function `renderOldProof` does that. In this case, the message informs th user whether their proof was longer than, the same length as, or shorter than the previously shortest proof. If it was shorter, the old proof in the database is replaced by the user's. 
+If the sequent is not already in the database, the sequent and the user's proof are added to it and a message is passed back to the frontend and shown in the contextual help window. This is handled by `sendDataCallback`. If the sequent already *is* in the database, both a message and the saved proof is sent. The message gives the user the option to see that proof in order to compare it to their own. The function `renderOldProof` does that. In this case, the message informs the user whether their proof was longer than, the same length as, or shorter than the previously shortest proof. If it was shorter, the old proof in the database is replaced by the user's. 
 
 ## 6 Version history
 
@@ -112,8 +112,9 @@ v0.8: Final visual design implemented
 
 v0.9: Backend added
 
+v0.10: Database added
+
 ## 7 Planned updates
 
 The app will be updated with the following:
-- the backend will be connected to a stable database
 - extension to predicate logic
