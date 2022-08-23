@@ -1,10 +1,12 @@
 from asyncio.windows_events import NULL
+from ipaddress import ip_address
 from flask import Flask, request
 import flask
 import json
 from flask_cors import CORS
 from itertools import permutations
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +19,17 @@ class database_of_proofs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sequent = db.Column(db.String(), index=True, unique=True)
     proof = db.Column(db.PickleType)
-# db.create_all() # creates the database - to be run only once
+
+
+class log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sequent = db.Column(db.String(), index=True)
+    proof = db.Column(db.PickleType)
+    ip = db.Column(db.String())
+    timestamp = db.Column(db.DateTime())
+
+
+# db.create_all()  # creates the database - to be run only once
 
 
 @app.route('/database', methods=["GET", "POST"])
@@ -43,6 +55,16 @@ def compareProof():
             sequent = sequent.replace(list_of_letters[i], str(i))
         sequents.append(sequent)
     canonical_eqv_class_representive = sorted(sequents)[0]
+    # create log entry
+    new_log_entry = log(
+        sequent=canonical_eqv_class_representive,
+        proof=new_proof,
+        ip=request.remote_addr,
+        timestamp=datetime.now()
+    )
+    db.session.add(new_log_entry)
+    db.session.commit()
+    # search database of proofs for match
     entry = database_of_proofs.query.filter(
         database_of_proofs.sequent == canonical_eqv_class_representive).first()
     if entry:
@@ -53,7 +75,6 @@ def compareProof():
                 'old_proof': old_proof
             }
             entry.proof = new_proof
-            print(entry)
             db.session.commit()
         elif len(new_proof) == len(old_proof):
             return_data = {
@@ -74,7 +95,6 @@ def compareProof():
             sequent=canonical_eqv_class_representive,
             proof=new_proof
         )
-        print(new_entry)
         db.session.add(new_entry)
         try:
             db.session.commit()

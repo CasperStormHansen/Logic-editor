@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 0.10**
+**Version 0.11**
 
 **Author: Casper Storm Hansen**
 
@@ -92,6 +92,8 @@ When the proof is finished, the function `contactServer` is called, which sends 
 
 If the sequent is not already in the database, the sequent and the user's proof are added to it and a message is passed back to the frontend and shown in the contextual help window. This is handled by `sendDataCallback`. If the sequent already *is* in the database, both a message and the saved proof is sent. The message gives the user the option to see that proof in order to compare it to their own. The function `renderOldProof` does that. In this case, the message informs the user whether their proof was longer than, the same length as, or shorter than the previously shortest proof. If it was shorter, the old proof in the database is replaced by the user's. 
 
+The backend also updates a log of everything that is sent to it.
+
 ## 6 Version history
 
 v0.1: Initial version
@@ -113,6 +115,8 @@ v0.8: Final visual design implemented
 v0.9: Backend added
 
 v0.10: Database added
+
+v0.11: Log of all finished proofs added to database
 
 ## 7 Planned updates
 
