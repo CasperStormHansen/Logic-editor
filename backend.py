@@ -7,10 +7,12 @@ from flask_cors import CORS
 from itertools import permutations
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from os import environ
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get(
+    'DATABASE_URL') or 'sqlite:///db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to supress warning
 db = SQLAlchemy(app)
 
@@ -29,7 +31,7 @@ class log(db.Model):
     timestamp = db.Column(db.DateTime())
 
 
-# db.create_all()  # creates the database - to be run only once
+# db.create_all()  # creates development database - to be run only once
 
 
 @app.route('/database', methods=["GET", "POST"])

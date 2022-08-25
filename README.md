@@ -118,6 +118,8 @@ v0.10: Database added
 
 v0.11: Log of all finished proofs added to database
 
+v0.12: First attempt at deployment
+
 ## 7 Planned updates
 
 The app will be updated with the following:
