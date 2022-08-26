@@ -7,12 +7,12 @@ from flask_cors import CORS
 from itertools import permutations
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from os import environ
+# from os import environ
 
 app = Flask(__name__)
 CORS(app)
 # environ.get('DATABASE_URL')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://casperstormhansen:OJAg9kciAgm9dNDNm131hKJEfWF6ukvp@dpg-cc45k85a4994c9qc2dtg-a/db_wqz1' or 'sqlite:///db.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://casperstormhansen:OJAg9kciAgm9dNDNm131hKJEfWF6ukvp@dpg-cc45k85a4994c9qc2dtg-a/db_wqz1' or 'sqlite:///db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to supress warning
 db = SQLAlchemy(app)
 
