@@ -1199,7 +1199,7 @@ const contactServer = () => {
     xhr = getXmlHttpRequestObject();
     xhr.onreadystatechange = sendDataCallback;
     // xhr.open("POST", "http://localhost:6969/database", true);
-    xhr.open("POST", "https://thelogiceditor.herokuapp.com/database", true);
+    xhr.open("POST", "https://the-logic-editor.onrender.com/database", true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhr.send(JSON.stringify({ "data": dataToSend }));
 }

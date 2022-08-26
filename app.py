@@ -11,8 +11,8 @@ from os import environ
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get(
-    'DATABASE_URL') or 'sqlite:///db.db'
+# environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://casperstormhansen:OJAg9kciAgm9dNDNm131hKJEfWF6ukvp@dpg-cc45k85a4994c9qc2dtg-a/db_wqz1' or 'sqlite:///db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to supress warning
 db = SQLAlchemy(app)
 
@@ -31,7 +31,7 @@ class log(db.Model):
     timestamp = db.Column(db.DateTime())
 
 
-# db.create_all()  # creates development database - to be run only once
+db.create_all()  # creates database - to be run only once
 
 
 @app.route('/database', methods=["GET", "POST"])
@@ -107,6 +107,23 @@ def compareProof():
 
 def string(formula):
     global list_of_letters
+    if formula['type'] == 'atomic':
+        if formula['letter'] not in list_of_letters:
+            list_of_letters.append(formula['letter'])
+        return formula['letter']
+    elif formula['type'] == 'contradiction':
+        return '⊥'
+    elif formula['type'] == 'negation':
+        return f"(¬{string(formula['right'])})"
+    elif formula['type'] == 'conjunction':
+        return f"({string(formula['left'])}&{string(formula['right'])})"
+    elif formula['type'] == 'disjunction':
+        return f"({string(formula['left'])}∨{string(formula['right'])})"
+    elif formula['type'] == 'conditional':
+        return f"({string(formula['left'])}→{string(formula['right'])})"
+    elif formula['type'] == 'biconditional':
+        return f"({string(formula['left'])}↔{string(formula['right'])})"
+    # match is from python 3.10 which is not supported by render.com
     # match formula['type']:
     #     case 'atomic':
     #         if formula['letter'] not in list_of_letters:
@@ -124,8 +141,6 @@ def string(formula):
     #         return f"({string(formula['left'])}→{string(formula['right'])})"
     #     case 'biconditional':
     #         return f"({string(formula['left'])}↔{string(formula['right'])})"
-    return 'test'
-    # match is from python 3.10
 
 
 if __name__ == "__main__":
