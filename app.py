@@ -107,23 +107,25 @@ def compareProof():
 
 def string(formula):
     global list_of_letters
-    match formula['type']:
-        case 'atomic':
-            if formula['letter'] not in list_of_letters:
-                list_of_letters.append(formula['letter'])
-            return formula['letter']
-        case 'contradiction':
-            return '⊥'
-        case 'negation':
-            return f"(¬{string(formula['right'])})"
-        case 'conjunction':
-            return f"({string(formula['left'])}&{string(formula['right'])})"
-        case 'disjunction':
-            return f"({string(formula['left'])}∨{string(formula['right'])})"
-        case 'conditional':
-            return f"({string(formula['left'])}→{string(formula['right'])})"
-        case 'biconditional':
-            return f"({string(formula['left'])}↔{string(formula['right'])})"
+    # match formula['type']:
+    #     case 'atomic':
+    #         if formula['letter'] not in list_of_letters:
+    #             list_of_letters.append(formula['letter'])
+    #         return formula['letter']
+    #     case 'contradiction':
+    #         return '⊥'
+    #     case 'negation':
+    #         return f"(¬{string(formula['right'])})"
+    #     case 'conjunction':
+    #         return f"({string(formula['left'])}&{string(formula['right'])})"
+    #     case 'disjunction':
+    #         return f"({string(formula['left'])}∨{string(formula['right'])})"
+    #     case 'conditional':
+    #         return f"({string(formula['left'])}→{string(formula['right'])})"
+    #     case 'biconditional':
+    #         return f"({string(formula['left'])}↔{string(formula['right'])})"
+    return 'test'
+    # match is from python 3.10
 
 
 if __name__ == "__main__":
