@@ -31,7 +31,7 @@ class log(db.Model):
     timestamp = db.Column(db.DateTime())
 
 
-db.create_all()  # creates database - to be run only once
+# db.create_all()  # creates database - to be run only once
 
 
 @app.route('/database', methods=["GET", "POST"])
