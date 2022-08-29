@@ -7,17 +7,17 @@ from flask_cors import CORS
 from itertools import permutations
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from os import getenv
+# from os import getenv
+import os
 
 app = Flask(__name__)
 CORS(app)
-secret_URI = getenv('RENDER_DATABASE_URI')
+secret_URI = os.environ.get('RENDER_DATABASE_URI')
 app.config['SQLALCHEMY_DATABASE_URI'] = secret_URI or 'sqlite:///db.db'
 if app.config['SQLALCHEMY_DATABASE_URI'] == secret_URI:
     print('Using Render database')
 else:
     print('Using local database')
-print(app.config['SQLALCHEMY_DATABASE_URI'])  # for debugging
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress warning
 db = SQLAlchemy(app)
 
