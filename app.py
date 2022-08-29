@@ -17,6 +17,7 @@ if app.config['SQLALCHEMY_DATABASE_URI'] == secret_URI:
     print('Using Render database')
 else:
     print('Using local database')
+print(app.config['SQLALCHEMY_DATABASE_URI'])  # for debugging
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress warning
 db = SQLAlchemy(app)
 
