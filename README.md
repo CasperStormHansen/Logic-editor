@@ -1,12 +1,22 @@
 # Logic Editor - code explanation
 
-**Version 0.11**
+**Version 1.0**
 
 **Author: Casper Storm Hansen**
 
 The Logic Editor web app lets user create natural deduction proofs as taught in, e.g., introductory logic courses in philosophy undergraduate programs.
 
-This document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective (which again presupposes basic knowledge of natural deduction proofs in formal logic).
+It is meant to be an aid to practice making such proofs after the student has been introduced to this proof system through lectures and/or a textbook. The aim is a user-friendly app that will make immediate intuitive sense to someone who has seen examples of such proofs. It is *not* intended to be a stand-alone introduction to natural deduction proofs.
+
+The editor is designed so it's impossible for the user to do something that violates the rules of the proof system. For example, inferences are done by selecting an inference rule and the previous lines to which it should be applied, and it is not possible to select inapplicable lines. Also, it is not possible to enter a premise or assumption which fails to be syntactically well-formed, because they must be entered by selecting connectives and propositional letters starting from the top of its syntactic tree and going down, not from left to right with manual addition of parenthesis.
+
+User-friendliness is also achieved with:
+- a contextual help window that informs the user about their options at each step of the process
+- the presence of an example proof at the beginning so it's immediately clear what kind of product can be produced in the editor
+
+When a proof is finished, it is sent to the server and compared with previously completed proofs. This serves two purposes. First, it adds a moderate aspect of "gamification" to the editor, which might help motivation. Second, since the user is informed if another user has managed to produce a shorter proof of the same sequent, it helps students learn to make elegant and simple proofs.
+
+The rest of this document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective. Hence, it also presupposes basic knowledge of natural deduction proofs in formal logic.
 
 Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. Section 4 explains the remaining code, for example that concerning initialization and resetting. Section 5 concerns the backend and the part of the frontend that connects to it. Section 6 contains the version history. And a final section lists planned updates.
 
@@ -102,7 +112,7 @@ v0.2: Contextual help added; example proof shown at page load; minor tweak to ho
 
 v0.3: Visual design improved
 
-v0.4: Option to delete last line added; visual warnings added for all buttons that delete something; buttons reorganised according to whether they trigger high-level or low-level actions
+v0.4: Option to delete last line added; visual warnings added for all buttons that delete something; buttons reorganized according to whether they trigger high-level or low-level actions
 
 v0.5: Changes to the inference rules; minor tweak to button design
 
@@ -119,6 +129,8 @@ v0.10: Database added
 v0.11: Log of all finished proofs added to database
 
 v0.12: First attempt at deployment
+
+v1.0: A number of minor changes made after feedback
 
 ## 7 Planned updates
 

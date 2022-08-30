@@ -1134,7 +1134,7 @@ createButton(`insert("contradiction",'')`, symbols.contradiction, 'symbolInput',
 });
 createButton('cancel(true)', 'Clear latest', 'cancel', 'cancel', 'delete', 'showDeleteCandidates()', 'unshowDeleteCandidates()');
 createButton('reset()', 'Clear all', 'reset', 'reset', 'delete', 'showDeleteCandidatesAll()', 'unshowDeleteCandidatesAll()');
-createButton('finishProof()', 'Finish proof', 'finish', 'finish', 'finish');
+createButton('finishProof()', 'End proof', 'finish', 'finish', 'finish');
 createButton('openSettings()', 'Settings', 'settings', 'settings', 'finish');
 buttonsActive({
     premiseOrAssumption: false,
