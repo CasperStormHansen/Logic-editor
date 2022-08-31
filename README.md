@@ -135,4 +135,4 @@ v1.0: A number of minor changes made after feedback
 ## 7 Planned updates
 
 The app will be updated with the following:
-- extension to predicate logic 
+- extension to predicate logic  
