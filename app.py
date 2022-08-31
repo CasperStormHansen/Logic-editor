@@ -10,7 +10,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://casperstormhansen:OJAg9kciAgm9dNDNm131hKJEfWF6ukvp@dpg-cc45k85a4994c9qc2dtg-a/db_wqz1' or 'sqlite:///db.db'
+# URI must begin with 'postgresql://', not 'postgres://', in spite of what Render says
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://casperstormhansen:OJAg9kciAgm9dNDNm131hKJEfWF6ukvp@dpg-cc45k85a4994c9qc2dtg-a/db_wqz1' or 'sqlite:///db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress warning
 db = SQLAlchemy(app)
 
