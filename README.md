@@ -1,6 +1,6 @@
 # Logic Editor - code explanation
 
-**Version 1.0**
+**Version 1.1**
 
 **Author: Casper Storm Hansen**
 
@@ -18,13 +18,13 @@ When a proof is finished, it is sent to the server and compared with previously 
 
 The rest of this document explains the Logic Editor code, presupposing understanding of the app from a user’s perspective. Hence, it also presupposes basic knowledge of natural deduction proofs in formal logic.
 
-Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. Section 4 explains the remaining code, for example that concerning initialization and resetting. Section 5 concerns the backend and the part of the frontend that connects to it. Section 6 contains the version history. And a final section lists planned updates.
+Section 1 covers proofs: their internal representation and how they are rendered. Section 2 deals with addition of premises and assumptions. Section 3 is concerned with applications of inference rules. Section 4 explains various bits and pieces, for example that concerning initialization and resetting. Section 5 concerns the backend and the part of the frontend that connects to it. Section 6 concerns download and upload functionality. Section 7 contains the version history. And a final section lists planned updates.
 
 ## 1 Proofs
 
 The syntactical structure of a formula is tree-shaped. A formula is internally represented by a dictionary, e.g., of the form `{type: ‘conjunction’, left: …, right: …}`, where the dots can have the same form – iterated to any level of complexity. The types `disjunction`, `conditional`, and `biconditional` are similar to the case of conjunction. The type `negation` has no `left` key. The type `atomic` has neither a `left` nor a `right` key, but instead a `letter` key, the value of which is the propositional letter or the contradiction symbol. The final type is `empty`, which is used when a formula is in the process of being entered by the user. Dictionaries with type `atomic` or `empty` constitute the leaves of the formula tree structure, while the rest constitute its internal nodes.
 
-The `string` function converts such a tree structure to html containing the formula in the usual linear form by recursively calling itself. To be precise, it calls itself via the `stringPar` function which adds parenthesis when appropriate. Both functions take an optional `id` argument, the presence of which indicates that the formula is being edited, in which case sub-formulas are wrapped in `<span>`s that are clickable and equipped with `id`s (see section 2 for more details).
+The `string` function converts such a tree structure to html containing the formula in the usual linear form by recursively calling itself. To be precise, it calls itself via the `stringPar` function which adds parenthesis when appropriate. Both functions take an optional `id` argument, the presence of which normally indicates that the formula is being edited, in which case sub-formulas are wrapped in `<span>`s that are clickable and equipped with `id`s (see section 2 for more details). Alternatively, the `id` argument may have the value `plain` or `latex`, in which case the return value is not html but part of the content needed for the files discussed in section 6 below. 
 
 The `proof` object is a list of objects that correspond to the lines of the proof, except the first item which is `null` to ensure that the list is, in effect, one-indexed. Each “line” is a dictionary containing
 
@@ -34,7 +34,7 @@ The `proof` object is a list of objects that correspond to the lines of the proo
 - `inferenceSources`: the lines it was inferred from, if any
 - `beingEdited`: a Boolean (may be absent, which represents false)
 
-The function `renderProof` converts the internal `proof` object to html which is then placed in a designated `<div>`. Each update of the proof, as shown to the user, happens by a complete replacement of the content of this `<div>`. The `renderProof` function calls the above-mentioned `string` function, as well as three other functions, which are described below.
+The function `renderProof` converts the internal `proof` object to html which is then placed in a designated `<div>`. Each update of the proof, as shown to the user, happens by a complete replacement of the content of this `<div>`. The `renderProof` function calls the above-mentioned `string` function, as well as four other functions. One of these is `inferenceString`, which converts `inference` and `inferenceSources` into a string for the right-most column of the rendered table. The other three functions are described below.
 
 ## 2 Addition of premises and assumptions
 
@@ -90,11 +90,11 @@ When the user is finished, a button can be clicked to show the proved sequent. T
 
 The "reset" button can be clicked at any time to reset the app to its initial state. This is of course handled by the `reset` function. It does approximately the same as what happens when the app is loaded (the last few lines of the code). However, at initialization buttons are also created using the `createButton` function and an example proof is shown. In addition, at this point the dictionary `symbols` is defined.
 
-When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six functions named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`.  And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
+When buttons are created, they are assigned an appropriate function to call on click. Some of them are also assigned a function that is called when the mouse enters its area, and another when it leaves. The former highlights what will be deleted if the button is pressed and the latter undoes that highlighting. This is accomplished by the six functions named variations of "showDeleteCandidates" and the auxiliary functions `addRed` and `removeRed`. And for this purpose, the classes `finalLine` and `ruleLine` are added to some table rows by the `renderProof` and `renderRule` functions.
 
 The highlighting effect is only activated if the mouse stays over the button in question for more than 100 milliseconds - to avoid annoying "blinking" when the user unintentionally passes over the button. It is not activated at all when the example proof is shown, since the user should not be discouraged to delete that. This is avoided because `addRed` checks the value of the variable `justLoaded`, which is initially true, and changed to false on the first call to `reset`.
 
-The `openSettings` function does what the name suggests. In the settings menu, the user can change symbols used for the connectives and the list of available propositional letters. This behavior is governed by the event listeners placed immediately after the definition of the `openSettings` function in the code.
+The `openSettings` function does what the name suggests. In the settings menu, the user can change symbols used for the connectives and the list of available propositional letters. This behavior is governed by the event listeners placed immediately after the definition of the `openSettings` function in the code. In addition, in this menu the EFQ inference rule can be enabled. (If this rule is used in a proof, the functionality explained in the next section is disabled.)
 
 ## 5 Backend
 
@@ -104,7 +104,17 @@ If the sequent is not already in the database, the sequent and the user's proof 
 
 The backend also updates a log of everything that is sent to it.
 
-## 6 Version history
+## 6 Download and upload functionality
+
+A click on the "Download/upload" button will reveal four options for the user in the help window. Three of them allows the user to download a file, and all of those are handled by the `download` function. First, the user can download the proof as a plain text file. In that case, appropriate formatting is achieved with the build-in `padStart` and `padEnd` functions. Second, it can be downloaded in the form of LaTeX code. And third, it can be downloaded as a file that can later be uploaded to the editor to continue work on it. Uploading is thus the fourth option. Such files contain a JSON version of a dictionary that contains the proof and information about whether the proof has been finished.
+
+The first part of the `download` function code creates the file content depending on which of the three options is chosen. The last few lines are responsible for the download process. It creates a DOM element with the required content, simulates a click on that element, and then removes the element from the DOM again.
+
+Upload also happens indirectly, i.e., through a DOM element. There is a hidden file selector in the DOM and a click on the fourth option in the help menu causes a "click" on this element through the `upload` function. That opens the standard file browser on the user's computer. An event listener reacts when the user has made a choice. First, since the user may have chosen multiple files, the first file is picked out. Then, when the file is fully loaded, it's content is passed to the `afterFileUpload` callback function. And then the file selector value is set to null; this is to ensure that the same file can be uploaded twice in a row (if it had not been set to null, selection of the same file again would not cause the *change* that the event listener is looking for).
+
+All of the functionality of the `afterFileUpload` function is wrapped in a try-catch block that ensures that an error message is given to the user if the file is not in the expected format or the attempt to read it otherwise fails. Inside the "try" part, the content of the file is used to overwrite the variables `proof` and `proofIsFinished`. Then, rendering happens, buttons are made active and inactive, and appropriate help text is displayed depending on whether (1) the proof is empty, (2) the proof is non-empty and not finished, and (3) the proof is non-empty and finished.
+
+## 7 Version history
 
 v0.1: Initial version
 
@@ -132,7 +142,9 @@ v0.12: First attempt at deployment
 
 v1.0: A number of minor changes made after feedback
 
-## 7 Planned updates
+v1.1: Ability to download and upload and ability to enable the ECQ inference rule added
+
+## 8 Planned updates
 
 The app will be updated with the following:
 - extension to predicate logic  

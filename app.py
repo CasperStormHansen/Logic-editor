@@ -76,19 +76,19 @@ def compareProof():
         old_proof = entry.proof
         if len(new_proof) < len(old_proof):
             return_data = {
-                'msg': 'This sequent has been proved before in this proof editor, but your proof is the shortest yet! <span class="render-old-proof" onclick=renderOldProof()>Click here</span> to see the previous record.',
+                'msg': 'This sequent has been proved before in this proof editor, but your proof is the shortest yet! <span class="link" onclick=renderOldProof()>Click here</span> to see the previous record.',
                 'old_proof': old_proof
             }
             entry.proof = new_proof
             db.session.commit()
         elif len(new_proof) == len(old_proof):
             return_data = {
-                'msg': 'This sequent has been proved before in this proof editor. Your proof&apos;s length matches that of the shortest previous proof. <span class="render-old-proof" onclick=renderOldProof()>Click here</span> to see the proof made by the record holder.',
+                'msg': 'This sequent has been proved before in this proof editor. Your proof&apos;s length matches that of the shortest previous proof. <span class="link" onclick=renderOldProof()>Click here</span> to see the proof made by the record holder.',
                 'old_proof': old_proof
             }
         else:
             return_data = {
-                'msg': 'This sequent has been proved before in this proof editor, and in fewer lines. <span class="render-old-proof" onclick=renderOldProof()>Click here</span> to see the proof made by the record holder.',
+                'msg': 'This sequent has been proved before in this proof editor, and in fewer lines. <span class="link" onclick=renderOldProof()>Click here</span> to see the proof made by the record holder.',
                 'old_proof': old_proof
             }
     else:

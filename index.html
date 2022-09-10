@@ -48,6 +48,8 @@
 
       <div id="noactiveinput-nolines" style="display:none">
         <p>To begin your proof, add a premise or an assumption.</p>
+        <p class="deemphasise">
+          Or click on “Download/upload” or “Settings” to see more options.</p>
       </div>
 
       <div id="noactiveinput-existinglines" style="display:none">
@@ -57,7 +59,8 @@
         <p id="finish-ready">
           Or, if the last line contains your desired conclusion, end the proof.</p>
         <p class="deemphasise">
-          Or click “Clear latest” to delete a line, or “Clear all” to start over.</p>
+          Or click on “Clear latest” to delete a line, or “Clear all” to start over, or “Download/upload” or “Settings”
+          to see more options.</p>
         <p class="deemphasise" id="not-finish-ready">
           Currently, you cannot end the proof, because the last line depends on one or more assumptions.
         </p>
@@ -110,9 +113,8 @@
         <p>
           Or, if this sub-formula is atomic, choose its propositional letter.</p>
         <p class="deemphasise">
-          Or click on a different part of the formula to input that first.</p>
-        <p class="deemphasise">
-          (Non-empty parts of the formula can be selected to be overwriten.)</p>
+          Or click on a different part of the formula to input that first. (Non-empty parts of the formula can be
+          selected to be overwritten.)</p>
         <p class="deemphasise">
           Or click "Clear latest" to cancel the addition of the current line.</p>
         <p class="deemphasise">
@@ -123,7 +125,7 @@
 
       <div id="inference-first" style="display:none">
         <p>Choose a line in the already existing part of the proof to play the
-          role of the highlighed line in the inference rule. Black lines have the required form, and can be selected.
+          role of the highlighted line in the inference rule. Black lines have the required form, and can be selected.
         </p>
         <p class="deemphasise">
           Or, if you have changed your mind, choose an alternative to this inference rule.</p>
@@ -133,7 +135,7 @@
 
       <div id="inference-next" style="display:none">
         <p>Choose a line in the already existing part of the proof to play the
-          role of the highlighed line in the inference rule. Black lines have the required form, and can be selected.
+          role of the highlighted line in the inference rule. Black lines have the required form, and can be selected.
         </p>
         <p class="deemphasise">
           Or, if you have changed your mind, cancel the application of this inference rule.</p>
@@ -143,7 +145,7 @@
 
       <div id="inference-first-fail" style="display:none">
         <p>There is no line in the already existing part of the proof that
-          has the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of
+          has the form of the highlighted line in the inference rule. Hence, you cannot continue with the application of
           this rule.</p>
         <p>
           Instead, choose another inference rule to be applied.</p>
@@ -155,7 +157,8 @@
 
       <div id="inference-next-fail" style="display:none">
         <p>There is no line in the already existing part of the proof that has
-          the form of the highlighed line in the inference rule. Hence, you cannot continue with the application of this
+          the form of the highlighted line in the inference rule. Hence, you cannot continue with the application of
+          this
           rule.</p>
         <p>
           Therefore, click on “Clear latest".</p>
@@ -191,9 +194,8 @@
         <p>
           Or, if this sub-formula is atomic, choose its propositional letter.</p>
         <p class="deemphasise">
-          Or click on a different part of the formula to input that first.</p>
-        <p class="deemphasise">
-          (Non-empty parts of the new disjunct can be selected to be overwriten.)</p>
+          Or click on a different part of the formula to input that first. (Non-empty parts of the new disjunct can be
+          selected to be overwritten.)</p>
         <p class="deemphasise">
           Or, if you have changed your mind, click "Clear latest" to cancel the application of this inference rule.</p>
         <p class="deemphasise">
@@ -217,9 +219,8 @@
         <p>
           Or, if this sub-formula is atomic, choose its propositional letter.</p>
         <p class="deemphasise">
-          Or click on a different part of the formula to input that first.</p>
-        <p class="deemphasise">
-          (Non-empty parts of the formula can be selected to be overwriten.)</p>
+          Or click on a different part of the formula to input that first. (Non-empty parts of the formula can be
+          selected to be overwritten.)</p>
         <p class="deemphasise">
           Or, if you have changed your mind, click "Clear latest" to cancel the application of this inference rule.</p>
         <p class="deemphasise">
@@ -256,7 +257,33 @@
           Click "Clear all" to begin another proof.</p>
         <p class="deemphasise">
           Or, if you have changed your mind, "unfinish" the proof by clicking "Clear latest", and add more lines.</p>
+        <p class="deemphasise">
+          Or click on “Download/upload” or “Settings” to see more options.</p>
         <p id="response-from-backend"></p>
+      </div>
+
+      <div id="finished-uploaded" style="display:none">
+        <p>Click "Clear all" to begin another proof.</p>
+        <p class="deemphasise">
+          Or "unfinish" the proof by clicking "Clear latest", and add more lines.</p>
+        <p class="deemphasise">
+          Or click on “Download/upload” or “Settings” to see more options.</p>
+      </div>
+
+
+
+
+      <div id="download-upload" style="display:none">
+        <p><span class="link" onclick='download("plain.txt", "plain")'>Click here</span> to download the proof as plain
+          text.</p>
+        <p><span class="link" onclick='download("latex.tex", "latex")'>Click here</span> to download the proof as LaTeX
+          code.</p>
+        <p><span class="link" onclick='download("proof.pro", "json")'>Click here</span> to download the proof
+          as a file that can
+          later be uploaded to this editor.</p>
+        <p><span class="link" onclick=upload()>Click here</span> to upload a previously downloaded proof.
+        </p>
+        <input type="file" id="file-selector" hidden>
       </div>
     </div>
   </div>
@@ -361,6 +388,13 @@
         <label><input type="radio" name="contradiction" value="↯" />↯</label>
       </fieldset>
       <fieldset>
+        <legend>EFQ rule available</legend>
+        <label><input type="radio" name="efq" value="no" checked="checked" />No</label>
+        <label><input type="radio" name="efq" value="yes" />Yes</label>
+        <p id="efq-setting-note">Note: If EFQ is used, your proof will not be registered in the database even if it
+          is the shortest yet.</p>
+      </fieldset>
+      <fieldset>
         <legend>Propositional letters</legend>
         <input type="text" id="propositionalLetters" value="ABCD" />
       </fieldset>
@@ -375,6 +409,5 @@
     </form>
   </div>
 </body>
-
 
 </html>

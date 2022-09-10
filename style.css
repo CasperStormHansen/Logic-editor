@@ -303,7 +303,7 @@ button[disabled] {
 }
 
 #delete>button {
-  width: 167px;
+  width: 110px;
 }
 
 #finish>button {
@@ -327,7 +327,7 @@ p {
   font-size: 12px;
 }
 
-.render-old-proof {
+.link {
   color: var(--link-color);
   text-decoration: underline;
   cursor: pointer;
@@ -353,4 +353,8 @@ fieldset {
   margin-top: 20px;
   margin-left: 5px;
   margin-right: 4px;
+}
+
+#efq-setting-note {
+  font-size: 10px;
 }

@@ -1,5 +1,5 @@
 const string = (formula, id = '') => {
-    if (id) {
+    if (!['', 'plain', 'latex'].includes(id)) {
         switch (formula.type) {
             case 'empty':
                 return `<span class=empty id=${id} onclick=makeActive(this,"justThis")>${formula.letter}</span>`;
@@ -13,15 +13,28 @@ const string = (formula, id = '') => {
                 return `<span id=${id}>${stringPar(formula.left, id + '.left')}<span onclick=makeActive(this,"parentNode")>&emsp13;${symbols[formula.type]}&emsp13;</span>${stringPar(formula.right, id + '.right')}</span>`;
         }
     } else {
+        if (id == '') {
+            var thinspace = '&thinsp;';
+            var normalspace = '&emsp13;';
+            var sym = symbols;
+        } else if (id == 'plain') {
+            var thinspace = '';
+            var normalspace = '';
+            var sym = symbols;
+        } else if (id == 'latex') {
+            var thinspace = '';
+            var normalspace = '';
+            var sym = latexSymbols;
+        }
         switch (formula.type) {
             case 'atomic':
                 return formula.letter;
             case 'contradiction':
-                return symbols.contradiction;
+                return sym.contradiction;
             case 'negation':
-                return `${symbols.negation}&thinsp;${stringPar(formula.right)}`;
+                return sym.negation + thinspace + stringPar(formula.right, id);
             default:
-                return `${stringPar(formula.left)}&emsp13;${symbols[formula.type]}&emsp13;${stringPar(formula.right)}`;
+                return stringPar(formula.left, id) + normalspace + sym[formula.type] + normalspace + stringPar(formula.right, id);
         }
     }
 }
@@ -64,7 +77,7 @@ const renderProof = () => {
         } else {
             rows += `<div class="tableCell">${string(proof[i]['formula'])}</div>`;
         }
-        rows += `<div class="tableCell">${proof[i]['inferenceSources']} ${proof[i]['inference']}</div>
+        rows += `<div class="tableCell">${inferenceString(proof[i])}</div>
             </div>`;
     }
     $("#proof").html(rows);
@@ -90,6 +103,21 @@ const renderProof = () => {
                 help('inference-next-fail');
             }
         }
+    }
+}
+
+const inferenceString = (proofline, latex = false) => {
+    var inf = proofline['inference'];
+    if (typeof inf == 'string') {
+        if (proofline['inferenceSources'].length == 0) {
+            return inf
+        } else {
+            return proofline['inferenceSources'] + ' ' + inf
+        }
+    } else if (!latex) {
+        return proofline['inferenceSources'] + ' ' + symbols[inf[0]] + inf[1]
+    } else {
+        return proofline['inferenceSources'] + ' $' + latexSymbols[inf[0]] + '$' + inf[1]
     }
 }
 
@@ -174,6 +202,7 @@ const insert = (type, symbol = '') => {
                 if (listOfEmpty.length === 1) {
                     if (ruleSelections[0] === null) {
                         proof[activeFormula.split(".")[0]]['beingEdited'] = false;
+                        renderProof();
                         activeElement = undefined;
                         activeFormula = undefined;
                         buttonsActive({
@@ -333,6 +362,11 @@ const testEligibilityOfLine = (proofLine, conjuncts = '') => {
                         && proof[proofLine]['formula']['right']['type'] === 'negation';
                 }
             }
+            case 'EFQ': {
+                if (ruleSelections[1] === null) {
+                    return JSON.stringify(proof[proofLine]['formula']) === JSON.stringify(theContradiction);
+                }
+            }
         }
     }
 }
@@ -370,7 +404,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: theContradiction,
                             dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
-                            inference: rule[0],
+                            inference: ['negation', 'E'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2]]
                         }
                     );
@@ -397,7 +431,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: negationOf(proof[ruleSelections[1]]['formula']),
                             dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[2]]['dependencies'].includes(i) && i !== ruleSelections[1]),
-                            inference: rule[0],
+                            inference: ['negation', 'I'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2]]
                         }
                     );
@@ -420,7 +454,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: proof[ruleSelections[1]]['formula'][ruleSelections[2]],
                             dependencies: proof[ruleSelections[1]]['dependencies'],
-                            inference: rule[0],
+                            inference: ['conjunction', 'E'],
                             inferenceSources: [ruleSelections[1]]
                         }
                     );
@@ -449,7 +483,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: conjunctionOf(proof[ruleSelections[1]]['formula'], proof[ruleSelections[2]]['formula']),
                             dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
-                            inference: rule[0],
+                            inference: ['conjunction', 'I'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2]]
                         }
                     );
@@ -499,7 +533,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                                     proof[ruleSelections[1]]['formula']
                             ),
                             dependencies: proof[ruleSelections[1]]['dependencies'],
-                            inference: rule[0],
+                            inference: ['disjunction', 'I'],
                             inferenceSources: [ruleSelections[1]]
                         }
                     );
@@ -544,7 +578,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: proof[ruleSelections[3]]['formula'],
                             dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || (proof[ruleSelections[3]]['dependencies'].includes(i) && i !== ruleSelections[2]) || (proof[ruleSelections[5]]['dependencies'].includes(i) && i !== ruleSelections[4])),
-                            inference: rule[0],
+                            inference: ['disjunction', 'E'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2], ruleSelections[3], ruleSelections[4], ruleSelections[5]]
                         }
                     );
@@ -573,7 +607,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: proof[ruleSelections[1]]['formula']['right'],
                             dependencies: [...Array(proof.length + 1).keys()].filter(i => proof[ruleSelections[1]]['dependencies'].includes(i) || proof[ruleSelections[2]]['dependencies'].includes(i)),
-                            inference: rule[0],
+                            inference: ['conditional', 'E'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2]]
                         }
                     );
@@ -601,7 +635,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: conditionalOf(proof[ruleSelections[1]]['formula'], proof[ruleSelections[2]]['formula']),
                             dependencies: proof[ruleSelections[2]]['dependencies'].filter(line => line !== ruleSelections[1]),
-                            inference: rule[0],
+                            inference: ['conditional', 'I'],
                             inferenceSources: [ruleSelections[1], ruleSelections[2]]
                         }
                     );
@@ -630,7 +664,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                             {
                                 formula: conjunctionOf(conditionalOf(proof[ruleSelections[1]]['formula']['left'], proof[ruleSelections[1]]['formula']['right']), conditionalOf(proof[ruleSelections[1]]['formula']['right'], proof[ruleSelections[1]]['formula']['left'])),
                                 dependencies: proof[ruleSelections[1]]['dependencies'],
-                                inference: rule[0],
+                                inference: 'Df',
                                 inferenceSources: [ruleSelections[1]]
                             }
                         );
@@ -639,7 +673,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                             {
                                 formula: biconditionalOf(proof[ruleSelections[1]]['formula']['left']['left'], proof[ruleSelections[1]]['formula']['left']['right']),
                                 dependencies: proof[ruleSelections[1]]['dependencies'],
-                                inference: rule[0],
+                                inference: 'Df',
                                 inferenceSources: [ruleSelections[1]]
                             }
                         );
@@ -662,7 +696,44 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
                         {
                             formula: proof[ruleSelections[1]]['formula']['right']['right'],
                             dependencies: proof[ruleSelections[1]]['dependencies'],
-                            inference: rule[0],
+                            inference: 'DN',
+                            inferenceSources: [ruleSelections[1]]
+                        }
+                    );
+                    finishRuleApplication();
+                    break;
+                }
+            }
+            break;
+        }
+        case 'EFQ': {
+            switch (ruleLine) {
+                case 1: {
+                    j = proofLine;
+                    a = proof[proofLine]['dependencies'];
+                    p = enteredDisjunct['formula'];
+                    buttonsActive({
+                        symbolInput: true
+                    });
+                    renderAll();
+                    makeActive(document.getElementById('formula'), 'justThis');
+                    help('efq-first')
+                    break;
+                }
+                case 'callFromInsertUnfinished': {
+                    p = enteredDisjunct['formula'];
+                    help('efq-next')
+                    break;
+                }
+                case 'callFromInsertFinished': {
+                    p = enteredDisjunct['formula'];
+                    k = proof.length;
+                    renderProof();
+                    proof.push(
+                        {
+                            formula: JSON.parse(JSON.stringify(enteredDisjunct.formula)),
+                            dependencies: proof[ruleSelections[1]]['dependencies'],
+                            inference: 'EFQ',
                             inferenceSources: [ruleSelections[1]]
                         }
                     );
@@ -676,6 +747,7 @@ const ruleVariableUpdate = (proofLine, ruleLine) => {
 }
 
 const renderRule = () => {
+    let rule = null;
     switch (ruleSelections[0]) {
         case `negationE`: {
             rule = [`${symbols.negation}E`,
@@ -787,6 +859,13 @@ const renderRule = () => {
             rule = ['DN',
                 [a, j, string(negationOf(negationOf(p)))],
                 [a, k, string(p), `${j} DN`]
+            ];
+            break;
+        }
+        case 'EFQ': {
+            rule = ['EFQ',
+                [a, j, string(theContradiction)],
+                [a, k, string(p, 'formula'), `${j} EFQ`]
             ];
             break;
         }
@@ -917,14 +996,28 @@ const finishProof = () => {
     html += ' ⊢ ' + string(conclusion) + '</div>';
     $("#sequent-wrapper").html(html);
     if (!proofIsFinished) {
-        $('#response-from-backend').html('Connecting to database to compare your proof with those previously created by users ...');
-        help('finished');
-        contactServer();
+        if (proofIsEFQFree()) {
+            $('#response-from-backend').html('Connecting to database to compare your proof with those previously created by users ...');
+            help('finished');
+            contactServer();
+        } else {
+            $('#response-from-backend').html('');
+            help('finished');
+        }
     }
     proofIsFinished = true;
 }
 
-let a, b, c, g, h, i, j, k, m, p, q, r, enteredDisjunct, ruleSelections, rule;
+const proofIsEFQFree = () => {
+    for (i = 1; i < proof.length; i++) {
+        if (proof[i]['inference'] === 'EFQ') {
+            return false
+        }
+    }
+    return true
+}
+
+let a, b, c, g, h, i, j, k, m, p, q, r, enteredDisjunct, ruleSelections;
 const resetRuleVariablesAndSelections = () => {
     a = 'a<sub>1</sub>,...,a<sub>n</sub>';
     b = 'b<sub>1</sub>,...,b<sub>u</sub>';
@@ -935,7 +1028,6 @@ const resetRuleVariablesAndSelections = () => {
     r = { type: 'atomic', letter: 'r' };
     enteredDisjunct = { formula: { type: 'empty', letter: '_' } };
     ruleSelections = [null, null, null, null, null, null];
-    rule = null;
 }
 
 const cancel = (fromCancelButton = false) => {
@@ -1123,6 +1215,8 @@ createButton(`ruleSelection('DN')`, `DN`, 'inference', 'DN', 'elim', 'showDelete
     createButton(`ruleSelection('${connective}I')`, `${symbols[connective]}I`, 'inference', `${connective}I`, 'intro', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
 })
 createButton(`ruleSelection('Df')`, `Df`, 'inference', `Df`, 'intro', 'showDeleteCandidatesRules()', 'unshowDeleteCandidatesRules()');
+createButton(`ruleSelection('EFQ')`, `EFQ`, 'inference', 'EFQ', 'intro');
+$(`#EFQ`).css('display', 'none');
 Object.keys(symbols).forEach(connective => {
     if (connective !== 'contradiction') {
         createButton(`insert("${connective}","")`, symbols[connective], 'symbolInput', connective, 'con')
@@ -1132,9 +1226,10 @@ createButton(`insert("contradiction",'')`, symbols.contradiction, 'symbolInput',
 ['A', 'B', 'C', 'D'].forEach(letter => {
     createButton(`insert("atomic","${letter}")`, letter, 'symbolInput', letter, 'letter')
 });
+createButton('finishProof()', 'End proof', 'finish', 'finish', 'delete');
 createButton('cancel(true)', 'Clear latest', 'cancel', 'cancel', 'delete', 'showDeleteCandidates()', 'unshowDeleteCandidates()');
 createButton('reset()', 'Clear all', 'reset', 'reset', 'delete', 'showDeleteCandidatesAll()', 'unshowDeleteCandidatesAll()');
-createButton('finishProof()', 'End proof', 'finish', 'finish', 'finish');
+createButton("help('download-upload')", 'Down- or upload', 'settings', 'download-upload-button', 'finish');
 createButton('openSettings()', 'Settings', 'settings', 'settings', 'finish');
 buttonsActive({
     premiseOrAssumption: false,
@@ -1172,10 +1267,15 @@ $('#symbolSelection input').on('change', () => {
     $(`#contradiction`).html(symbols['contradiction']);
     renderAll();
     if (proofIsFinished) {
-        finishProof();///////
+        finishProof();
     }
     if ($("#old-proof").html()) {
         renderOldProof();
+    }
+    if ($(`input[name=efq]:checked`, '#symbolSelection').val() == 'yes') {
+        $(`#EFQ`).css('display', 'inline');
+    } else {
+        $(`#EFQ`).css('display', 'none');
     }
 });
 
@@ -1229,8 +1329,118 @@ const renderOldProof = () => {
                 <div class="tableCell">${String(oldProof[i]['dependencies'])}</div>
                 <div class="tableCell">(${i})</div>
                 <div class="tableCell">${string(oldProof[i]['formula'])}</div>
-                <div class="tableCell">${oldProof[i]['inferenceSources']} ${oldProof[i]['inference']}</div>
+                <div class="tableCell">${inferenceString(oldProof[i])}</div>
             </div>`;
     }
     $("#old-proof").html(rows);
+}
+
+
+
+
+// Download and upload functionality
+const download = (filename, format) => {
+    if (format == "json") {
+        var content = JSON.stringify({
+            proof: proof,
+            proofIsFinished: proofIsFinished
+        });
+    } else if (format == 'plain') {
+        var content = '';
+        for (let i = 1; i < proof.length; i++) {
+            content += String(proof[i]['dependencies']).padStart(10);
+            content += ' | ';
+            content += ('(' + i + ')').padStart(4);
+            content += ' | ';
+            content += string(proof[i]['formula'], 'plain').padEnd(40);
+            content += ' | ';
+            content += inferenceString(proof[i]);
+            content += '\n';
+        }
+    } else {
+        var content = String.raw`\documentclass{article}` + '\n';
+        content += String.raw`\usepackage{array}` + '\n';
+        content += String.raw`\usepackage{tabularx}` + '\n';
+        content += String.raw`\begin{document}` + '\n';
+        content += String.raw`  \noindent` + '\n';
+        content += String.raw`  \begin{tabularx}{\linewidth}{` + '\n';
+        content += String.raw`    >{\raggedleft\hsize=.8\hsize}X` + '\n';
+        content += String.raw`    >{\centering\hsize=.3\hsize}X` + '\n';
+        content += String.raw`    >{\hsize=1.9\hsize}X` + '\n';
+        content += String.raw`    >{\hsize=1\hsize}X` + '\n';
+        content += String.raw`  }` + '\n';
+        for (let i = 1; i < proof.length; i++) {
+            content += String(proof[i]['dependencies']);
+            content += ' & ';
+            content += '(' + i + ')';
+            content += ' & $';
+            content += string(proof[i]['formula'], 'latex');
+            content += '$ & ';
+            content += inferenceString(proof[i], true);
+            content += String.raw`\\` + '\n';
+        }
+        content += String.raw`  \end{tabularx}` + '\n';
+        content += String.raw`\end{document}`;
+    }
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+const upload = () => {
+    document.getElementById('file-selector').click();
+}
+
+let file
+const fileSelector = document.getElementById('file-selector');
+fileSelector.addEventListener('change', (event) => {
+    if (fileSelector.value) {
+        file = event.target.files[0];
+        file.text().then(afterFileUpload);
+        fileSelector.value = null;
+    }
+});
+
+const afterFileUpload = (value) => {
+    try {
+        console.log('Uploaded:' + value)
+        var parsed = JSON.parse(value);
+        if (parsed['proof'] == undefined || parsed['proofIsFinished'] == undefined) {
+            throw 'File not valid';
+        }
+        reset()
+        proof = parsed['proof'];
+        proofIsFinished = parsed['proofIsFinished'];
+        if (proof.length > 1) {
+            renderAll();
+            buttonsActive({
+                premiseOrAssumption: true,
+                inference: true,
+                cancel: true,
+                reset: true,
+                settings: true,
+                finish: finishReady()
+            });
+            help('noactiveinput-existinglines');
+        }
+        if (proofIsFinished) {
+            finishProof();
+            help("finished-uploaded")
+        }
+    } catch (error) {
+        alert('File is not valid');
+    }
+}
+
+var latexSymbols = {
+    negation: '\\neg ',
+    conjunction: '\\mathrel{\\&}',
+    disjunction: '\\vee ',
+    conditional: '\\rightarrow ',
+    biconditional: '\\leftrightarrow ',
+    contradiction: '\\bot '
 }
